@@ -9,6 +9,7 @@ import {
   type Country,
   type Review,
   type ReviewPage,
+  type StoreAdapter,
 } from "../types.js";
 
 export const IOS_LOOKUP_HOST = "itunes.apple.com";
@@ -70,10 +71,7 @@ export type IosFixtureIndex = {
   apps: IosFixtureEntry[];
 };
 
-export type IosAdapter = {
-  getListing(id: string, country: Country): Promise<AppListing>;
-  getReviews(id: string, country: Country, page: number): Promise<ReviewPage>;
-};
+export type IosAdapter = StoreAdapter;
 
 const FIXTURES_DIR = join(
   dirname(fileURLToPath(import.meta.url)),

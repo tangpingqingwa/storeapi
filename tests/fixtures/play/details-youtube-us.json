@@ -1,0 +1,19 @@
+{
+  "packageName": "com.google.android.youtube",
+  "name": "YouTube",
+  "author": { "name": "Google LLC" },
+  "url": "https://play.google.com/store/apps/details?id=com.google.android.youtube&hl=en&gl=us",
+  "image": "https://play-lh.googleusercontent.com/recorded-fixture-youtube-icon.png",
+  "applicationCategory": "Video Players & Editors",
+  "aggregateRating": {
+    "ratingValue": 4.4,
+    "ratingCount": 152000000
+  },
+  "offers": {
+    "price": 0,
+    "priceCurrency": "USD"
+  },
+  "description": "Watch and share videos. This is a recorded Play public-page fixture, not a live fetch.",
+  "softwareVersion": "19.50.37",
+  "datePublished": "2026-01-14T00:00:00Z"
+}

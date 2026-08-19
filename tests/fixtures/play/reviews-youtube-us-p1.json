@@ -1,0 +1,49 @@
+{
+  "reviews": [
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_1",
+      "userName": "photo.fan",
+      "score": 5,
+      "title": "Still the best player",
+      "text": "Playback is solid. This is a real review from the recorded Play public-page fixture.",
+      "version": "19.50.37",
+      "at": "2026-01-12T18:22:11-07:00"
+    },
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_2",
+      "userName": "night.owl",
+      "score": 4,
+      "title": "Mostly good",
+      "text": "Recommendations work. Ads are loud but the app still does what it says.",
+      "version": "19.50.37",
+      "at": "2026-01-11T09:04:00-07:00"
+    },
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_3",
+      "userName": "bug.hunter",
+      "score": 2,
+      "title": "Crashes on Picture-in-Picture",
+      "text": "PiP crashed twice today. Stars are 2 because the rest still works.",
+      "version": "19.49.32",
+      "at": "2026-01-10T21:41:33-07:00"
+    },
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_4",
+      "userName": "quiet.reader",
+      "score": 1,
+      "title": "Login loop",
+      "text": "Stuck on a login loop after the last update. Body must stay this recorded text.",
+      "version": "19.49.32",
+      "at": "2026-01-09T07:15:44-07:00"
+    },
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_5",
+      "userName": "ok.user",
+      "score": 3,
+      "title": "Fine",
+      "text": "It is fine. Three stars for a recorded middle rating.",
+      "version": "19.48.10",
+      "at": "2026-01-08T14:03:09-07:00"
+    }
+  ]
+}

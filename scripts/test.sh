@@ -56,6 +56,25 @@ if [[ -d tests/fixtures/ios ]]; then
   fi
 fi
 
+echo "== Play fixtures are recorded JSON, not live Google Play =="
+if [[ -d tests/fixtures/play ]]; then
+  ls tests/fixtures/play/*.json >/dev/null 2>&1 \
+    || fail "tests/fixtures/play has no recorded JSON"
+  grep -q '"YouTube"' tests/fixtures/play/details-youtube-us.json \
+    || fail "missing recorded Play US listing fixture"
+  grep -q '"score"' tests/fixtures/play/reviews-youtube-us-p1.json \
+    || fail "missing recorded Play US reviews fixture"
+  if grep -RInE 'adapters/' src/http >/dev/null 2>&1; then
+    fail "HTTP must call core/* only"
+  fi
+  if grep -RInE 'https?://play\.google\.com|https?://android\.clients\.google\.com' src/core src/http >/dev/null 2>&1; then
+    fail "core/http must not call Play; HTTP uses core/* only"
+  fi
+  if grep -RInE '\bfetch\s*\(' src/adapters src/core src/http >/dev/null 2>&1; then
+    fail "live fetch() is not allowed; Play stays on recorded fixtures"
+  fi
+fi
+
 if [[ -f package.json ]]; then
   echo "== install =="
   if [[ ! -d node_modules ]]; then

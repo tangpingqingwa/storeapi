@@ -77,6 +77,24 @@ export type AppListing = {
   fetchedAt: string;
 };
 
+export const APP_LISTING_KEYS = [
+  "store",
+  "id",
+  "bundleId",
+  "name",
+  "developer",
+  "url",
+  "iconUrl",
+  "category",
+  "rating",
+  "price",
+  "description",
+  "version",
+  "updatedAt",
+  "countries",
+  "fetchedAt",
+] as const satisfies readonly (keyof AppListing)[];
+
 export type Review = {
   id: string | null;
   stars: number;
@@ -87,12 +105,63 @@ export type Review = {
   createdAt: string | null;
 };
 
+export const REVIEW_KEYS = [
+  "id",
+  "stars",
+  "title",
+  "body",
+  "author",
+  "version",
+  "createdAt",
+] as const satisfies readonly (keyof Review)[];
+
 export type ReviewPage = {
   page: number;
   country: Country;
   hasMore: boolean;
   reviews: Review[];
 };
+
+export type StoreAdapter = {
+  getListing(id: string, country: Country): Promise<AppListing>;
+  getReviews(id: string, country: Country, page: number): Promise<ReviewPage>;
+};
+
+export type StoreAdapters = {
+  ios: StoreAdapter;
+  play: StoreAdapter;
+};
+
+export const REVIEW_PAGE_KEYS = [
+  "page",
+  "country",
+  "hasMore",
+  "reviews",
+] as const satisfies readonly (keyof ReviewPage)[];
+
+function sameKeySet(actual: string[], expected: readonly string[]): boolean {
+  if (actual.length !== expected.length) {
+    return false;
+  }
+  const wanted = new Set(expected);
+  return actual.every((key) => wanted.has(key));
+}
+
+export function listingUsesUnifiedSchema(listing: AppListing): boolean {
+  return (
+    sameKeySet(Object.keys(listing), APP_LISTING_KEYS) &&
+    sameKeySet(Object.keys(listing.rating), ["average", "count"]) &&
+    (listing.price === null ||
+      sameKeySet(Object.keys(listing.price), ["amount", "currency"]))
+  );
+}
+
+export function reviewPageUsesUnifiedSchema(page: ReviewPage): boolean {
+  if (!sameKeySet(Object.keys(page), REVIEW_PAGE_KEYS)) {
+    return false;
+  }
+  return page.reviews.every((review) => sameKeySet(Object.keys(review), REVIEW_KEYS));
+}
 
 export function isStore(value: string): value is Store {
   return value === "ios" || value === "play";

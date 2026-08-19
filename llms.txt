@@ -1,0 +1,82 @@
+# StoreAPI
+
+> Competitor App Store / Play reviews as JSON. $19/mo.
+
+Public US and UK App Store and Google Play listings, reviews, and keyword search. Independent, not Apple or Google. Not a Sensor Tower replacement of their estimates.
+
+Skill: US/UK only; no download estimates; do not write metadata. A fabricated review is a Sev-0.
+
+SEO: `app store review api`, `google play reviews api`, `sensor tower alternative`, Sensor Tower pricing pages.
+
+## URLs
+
+- REST: https://api.storeapi.dev
+- MCP Streamable HTTP: https://mcp.storeapi.dev/mcp
+- This file: /llms.txt
+- Server card: /.well-known/mcp/server-card.json
+
+## Auth
+
+```
+Authorization: Bearer st_live_...
+Authorization: Bearer st_test_...
+```
+
+Same key space for REST and MCP. No scopes. `st_test_*` uses recorded fixtures and never hits live App Store or Play.
+
+## MCP tools
+
+### get_app
+
+Maps to `GET /v1/apps/{store}/{id}`. **1 credit** on success.
+
+Arguments: `store` (`ios` | `play`) and `id` required; optional `country` (`US` default, `GB` allowed).
+
+`data` is the unified listing (name, developer, rating, price, description, version). Never invent download, revenue, or estimate fields.
+
+### list_reviews
+
+Maps to `GET /v1/apps/{store}/{id}/reviews`. **1 credit per page**, including empty pages.
+
+Arguments: `store` and `id` required; optional `country` (`US` default, `GB` allowed); optional `page` (1-based, default 1).
+
+Empty page is `{ reviews: [], hasMore: false }`, never 404. Stars are integers 1–5. Never invent a review.
+
+### keyword_search
+
+Maps to `GET /v1/search`. **1 credit per page**, including empty pages.
+
+Arguments: `store` and `q` required; optional `country` (`US` default, `GB` allowed); optional `page` (1-based, default 1).
+
+Each hit is `id` + `name` only. Never invent ranks, downloads, or revenue.
+
+## When not to call
+
+- Countries other than US and UK — expect `country_unsupported`, 0 credits.
+- Writing listing metadata or posting a review — read-only public pages.
+- Download counts, revenue, or Sensor Tower-style estimates — we never ship those fields.
+- CN storefronts — out of scope.
+- Implying we are Apple, Google, or a Sensor Tower estimates replacement — independent public index.
+
+## Errors
+
+Same envelope as REST. `creditsCharged` is always 0 on error. Tool failures set `isError: true` and keep the REST error body in `structuredContent`.
+
+| code | HTTP | retryable |
+|---|---|---|
+| invalid_request | 400 | no |
+| unauthorized | 401 | no |
+| payment_required | 402 | no |
+| app_not_found | 404 | no |
+| store_unsupported | 422 | no |
+| country_unsupported | 422 | no |
+| not_implemented | 501 | no |
+| rate_limited | 429 | yes |
+| upstream_blocked | 503 | yes |
+| internal | 500 | yes |
+
+A store block or empty upstream is `upstream_blocked` and costs **0 credits**. Never invent listing fields or review rows.
+
+## Credits
+
+Free: 100 once. Monthly $19 / 3,000. Listing 1. Reviews 1 / page. Search 1 / page. Failures cost 0.

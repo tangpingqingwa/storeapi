@@ -2,6 +2,7 @@
 
 Build contract: [SPEC.md](./SPEC.md).
 How we work: [CONTRIBUTING.md](./CONTRIBUTING.md). `main` stays buildable and testable.
+How we build: [BUILD.md](./BUILD.md) — stack, modules, tests, PR sequence.
 
 App Store and Google Play: app details, reviews, charts, keyword search.
 

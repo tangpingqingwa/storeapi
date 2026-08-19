@@ -1,0 +1,16 @@
+{
+  "apps": [
+    {
+      "packageName": "com.google.android.youtube",
+      "name": "YouTube"
+    },
+    {
+      "packageName": "com.instagram.android",
+      "name": "Instagram"
+    },
+    {
+      "packageName": "com.whatsapp",
+      "name": "WhatsApp Messenger"
+    }
+  ]
+}

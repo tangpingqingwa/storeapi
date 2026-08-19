@@ -6,9 +6,14 @@ import {
   assertReviewStars,
   listingHasForbiddenEstimateField,
   type AppListing,
+  type ChartEntry,
+  type ChartKind,
+  type ChartPage,
   type Country,
   type Review,
   type ReviewPage,
+  type SearchHit,
+  type SearchPage,
   type StoreAdapter,
 } from "../types.js";
 
@@ -51,24 +56,39 @@ export type IosRssEntry = {
   title?: { label?: string };
   content?: { label?: string };
   author?: { name?: { label?: string } };
+  "im:name"?: { label?: string };
   "im:rating"?: { label?: string };
   "im:version"?: { label?: string };
   updated?: { label?: string };
 };
 
-export type IosFixtureKind = "lookup" | "reviews";
+export type IosFixtureKind = "lookup" | "reviews" | "charts" | "search";
 
 export type IosFixtureEntry = {
   kind: IosFixtureKind;
-  id: string;
+  id?: string;
   country: Country;
   page?: number;
   file: string;
   status?: number;
+  chartKind?: ChartKind;
+  category?: string | null;
+  q?: string;
 };
 
 export type IosFixtureIndex = {
   apps: IosFixtureEntry[];
+};
+
+export type IosRssChartFeed = {
+  feed?: {
+    entry?: IosRssEntry | IosRssEntry[];
+  };
+};
+
+export type IosSearchResult = {
+  resultCount: number;
+  results: IosLookupApp[];
 };
 
 export type IosAdapter = StoreAdapter;
@@ -79,6 +99,8 @@ const FIXTURES_DIR = join(
 );
 
 const ITUNES_REVIEWS_PER_PAGE = 50;
+const ITUNES_CHARTS_PER_PAGE = 25;
+const ITUNES_SEARCH_PER_PAGE = 25;
 
 export function loadIosFixtureIndex(): IosFixtureIndex {
   const raw = readFileSync(join(FIXTURES_DIR, "index.json"), "utf8");
@@ -102,6 +124,29 @@ export function itunesReviewsRssUrl(
   return `https://${IOS_RSS_HOST}/${countryCode}/rss/customerreviews/page=${page}/id=${encodeURIComponent(id)}/sortby=mostrecent/json`;
 }
 
+const IOS_CHART_FEEDS: Record<ChartKind, string> = {
+  free: "topfreeapplications",
+  paid: "toppaidapplications",
+  grossing: "topgrossingapplications",
+};
+
+export function itunesChartsRssUrl(
+  country: Country,
+  kind: ChartKind,
+  category: string | null,
+  page: number,
+): string {
+  const countryCode = country.toLowerCase();
+  const feed = IOS_CHART_FEEDS[kind];
+  const genre = category === null || category === "" ? "" : `/genre=${encodeURIComponent(category)}`;
+  return `https://${IOS_RSS_HOST}/${countryCode}/rss/${feed}/limit=25${genre}/page=${page}/json`;
+}
+
+export function itunesSearchUrl(q: string, country: Country, page: number): string {
+  const offset = (page - 1) * ITUNES_SEARCH_PER_PAGE;
+  return `https://${IOS_LOOKUP_HOST}/search?term=${encodeURIComponent(q)}&country=${country.toLowerCase()}&entity=software&limit=${ITUNES_SEARCH_PER_PAGE}&offset=${offset}`;
+}
+
 function readFixtureJson(file: string): unknown {
   return JSON.parse(readFileSync(join(FIXTURES_DIR, file), "utf8"));
 }
@@ -116,9 +161,9 @@ function sameIosId(left: string, right: string): boolean {
   return left.toLowerCase() === right.toLowerCase();
 }
 
-function findFixture(
+function findAppFixture(
   index: IosFixtureIndex,
-  kind: IosFixtureKind,
+  kind: "lookup" | "reviews",
   id: string,
   country: Country,
   page?: number,
@@ -130,7 +175,50 @@ function findFixture(
     if (kind === "reviews" && (entry.page ?? 1) !== (page ?? 1)) {
       return false;
     }
-    return sameIosId(entry.id, id);
+    return entry.id !== undefined && sameIosId(entry.id, id);
+  });
+}
+
+function sameCategory(left: string | null | undefined, right: string | null): boolean {
+  const normalized = left === undefined || left === "" ? null : left;
+  return normalized === right;
+}
+
+function findChartFixture(
+  index: IosFixtureIndex,
+  country: Country,
+  kind: ChartKind,
+  category: string | null,
+  page: number,
+): IosFixtureEntry | undefined {
+  return index.apps.find((entry) => {
+    if (entry.kind !== "charts" || entry.country !== country) {
+      return false;
+    }
+    if (entry.chartKind !== kind) {
+      return false;
+    }
+    if ((entry.page ?? 1) !== page) {
+      return false;
+    }
+    return sameCategory(entry.category, category);
+  });
+}
+
+function findSearchFixture(
+  index: IosFixtureIndex,
+  country: Country,
+  q: string,
+  page: number,
+): IosFixtureEntry | undefined {
+  return index.apps.find((entry) => {
+    if (entry.kind !== "search" || entry.country !== country) {
+      return false;
+    }
+    if ((entry.page ?? 1) !== page) {
+      return false;
+    }
+    return (entry.q ?? "").toLowerCase() === q.toLowerCase();
   });
 }
 
@@ -227,6 +315,80 @@ export function parseIosLookup(
   return listing;
 }
 
+export function parseIosCharts(
+  payload: IosRssChartFeed,
+  country: Country,
+  kind: ChartKind,
+  category: string | null,
+  page: number,
+): ChartPage {
+  const results: ChartEntry[] = [];
+  for (const entry of rssEntries(payload)) {
+    const id =
+      textOrNull(entry.id?.attributes?.["im:id"]) ??
+      textOrNull(entry.id?.label)?.match(/id(\d+)/)?.[1] ??
+      null;
+    const name = textOrNull(entry["im:name"]?.label) ?? textOrNull(entry.title?.label);
+    if (id === null || name === null) {
+      throw new StoreApiError("upstream_blocked", "Chart entry is missing id or name.");
+    }
+    results.push({
+      rank: results.length + 1,
+      id,
+      name,
+    });
+  }
+  const pageData: ChartPage = {
+    store: "ios",
+    country,
+    kind,
+    category,
+    page,
+    hasMore: results.length >= ITUNES_CHARTS_PER_PAGE,
+    results,
+  };
+  if (listingHasForbiddenEstimateField(pageData)) {
+    throw new StoreApiError("internal", "Charts must not include download estimates.");
+  }
+  return pageData;
+}
+
+export function parseIosSearch(
+  payload: IosSearchResult,
+  country: Country,
+  q: string,
+  page: number,
+): SearchPage {
+  if (!Number.isInteger(payload.resultCount) || payload.resultCount < 0) {
+    throw new StoreApiError("upstream_blocked", "iTunes search payload is malformed.");
+  }
+  if (!Array.isArray(payload.results)) {
+    throw new StoreApiError("upstream_blocked", "iTunes search payload is malformed.");
+  }
+  const results: SearchHit[] = [];
+  for (const app of payload.results) {
+    if (app.trackId === undefined || app.trackName === undefined) {
+      throw new StoreApiError("upstream_blocked", "Search hit is missing id or name.");
+    }
+    results.push({
+      id: String(app.trackId),
+      name: app.trackName,
+    });
+  }
+  const pageData: SearchPage = {
+    store: "ios",
+    country,
+    q,
+    page,
+    hasMore: results.length >= ITUNES_SEARCH_PER_PAGE,
+    results,
+  };
+  if (listingHasForbiddenEstimateField(pageData)) {
+    throw new StoreApiError("internal", "Search must not include download estimates.");
+  }
+  return pageData;
+}
+
 export function parseIosReviews(
   payload: IosRssFeed,
   country: Country,
@@ -276,7 +438,7 @@ export function createFixtureIosAdapter(
 ): IosAdapter {
   return {
     async getListing(id, country) {
-      const match = findFixture(index, "lookup", id, country);
+      const match = findAppFixture(index, "lookup", id, country);
       if (match === undefined) {
         throw new StoreApiError("app_not_found", "App was not found on the App Store.");
       }
@@ -293,7 +455,7 @@ export function createFixtureIosAdapter(
       return parseIosLookup(payload, id, country, new Date().toISOString());
     },
     async getReviews(id, country, page) {
-      const match = findFixture(index, "reviews", id, country, page);
+      const match = findAppFixture(index, "reviews", id, country, page);
       if (match === undefined) {
         await this.getListing(id, country);
         return {
@@ -314,6 +476,49 @@ export function createFixtureIosAdapter(
       }
       const payload = readFixtureJson(match.file) as IosRssFeed;
       return parseIosReviews(payload, country, page);
+    },
+    async getCharts(country, kind, category, page) {
+      const match = findChartFixture(index, country, kind, category, page);
+      if (match === undefined) {
+        return {
+          store: "ios",
+          country,
+          kind,
+          category,
+          page,
+          hasMore: false,
+          results: [],
+        };
+      }
+      if ((match.status ?? 200) >= 500) {
+        throw new StoreApiError(
+          "upstream_blocked",
+          "App Store charts upstream is blocked.",
+        );
+      }
+      const payload = readFixtureJson(match.file) as IosRssChartFeed;
+      return parseIosCharts(payload, country, kind, category, page);
+    },
+    async search(country, q, page) {
+      const match = findSearchFixture(index, country, q, page);
+      if (match === undefined) {
+        return {
+          store: "ios",
+          country,
+          q,
+          page,
+          hasMore: false,
+          results: [],
+        };
+      }
+      if ((match.status ?? 200) >= 500) {
+        throw new StoreApiError(
+          "upstream_blocked",
+          "App Store search upstream is blocked.",
+        );
+      }
+      const payload = readFixtureJson(match.file) as IosSearchResult;
+      return parseIosSearch(payload, country, q, page);
     },
   };
 }

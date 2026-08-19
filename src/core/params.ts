@@ -2,8 +2,10 @@ import {
   isIosBundleId,
   isIosNumericId,
   isPlayPackageId,
+  parseChartKind,
   parseCountry,
   parseStore,
+  type ChartKind,
   type Country,
   type Store,
 } from "../types.js";
@@ -63,4 +65,84 @@ export function resolveStoreRequest(input: {
     );
   }
   return { store, id, country };
+}
+
+export type ResolvedChartRequest = {
+  store: Store;
+  country: Country;
+  kind: ChartKind;
+  category: string | null;
+  page: number;
+};
+
+export type ResolvedSearchRequest = {
+  store: Store;
+  country: Country;
+  q: string;
+  page: number;
+};
+
+export function normalizeCategory(value: string | null | undefined): string | null {
+  const trimmed = value?.trim() ?? "";
+  return trimmed === "" ? null : trimmed;
+}
+
+export function resolveChartRequest(input: {
+  store?: string;
+  country?: string;
+  kind?: string;
+  category?: string;
+  page?: string | number;
+}): ResolvedChartRequest {
+  const store = parseStore(input.store);
+  if (store === null) {
+    throw new StoreApiError("store_unsupported", "Store must be ios or play.");
+  }
+  const country = parseCountry(input.country);
+  if (country === null) {
+    throw new StoreApiError("country_unsupported", "Country must be US or GB.");
+  }
+  const kind = parseChartKind(input.kind);
+  if (kind === null) {
+    throw new StoreApiError(
+      "invalid_request",
+      "kind must be free, paid, or grossing.",
+    );
+  }
+  const page = parsePage(input.page);
+  if (page === null) {
+    throw new StoreApiError("invalid_request", "page must be an integer >= 1.");
+  }
+  return {
+    store,
+    country,
+    kind,
+    category: normalizeCategory(input.category),
+    page,
+  };
+}
+
+export function resolveSearchRequest(input: {
+  store?: string;
+  country?: string;
+  q?: string;
+  page?: string | number;
+}): ResolvedSearchRequest {
+  const store = parseStore(input.store);
+  if (store === null) {
+    throw new StoreApiError("store_unsupported", "Store must be ios or play.");
+  }
+  const country = parseCountry(input.country);
+  if (country === null) {
+    throw new StoreApiError("country_unsupported", "Country must be US or GB.");
+  }
+  const q = input.q?.trim() ?? "";
+  if (q === "") {
+    throw new StoreApiError("invalid_request", "q is required.");
+  }
+  const page = parsePage(input.page);
+  if (page === null) {
+    throw new StoreApiError("invalid_request", "page must be an integer >= 1.");
+  }
+  return { store, country, q, page };
 }

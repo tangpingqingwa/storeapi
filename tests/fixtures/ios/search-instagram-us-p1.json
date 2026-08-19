@@ -1,0 +1,17 @@
+{
+  "resultCount": 2,
+  "results": [
+    {
+      "trackId": 389801252,
+      "trackName": "Instagram",
+      "bundleId": "com.burbn.instagram",
+      "artistName": "Instagram, Inc."
+    },
+    {
+      "trackId": 855697506,
+      "trackName": "Threads",
+      "bundleId": "com.burbn.barcelona",
+      "artistName": "Instagram, Inc."
+    }
+  ]
+}

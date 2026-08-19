@@ -1,0 +1,20 @@
+{
+  "feed": {
+    "entry": [
+      {
+        "im:name": { "label": "Shadowrocket" },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/shadowrocket/id932747118?uo=2",
+          "attributes": { "im:id": "932747118" }
+        }
+      },
+      {
+        "im:name": { "label": "HotSchedules" },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/hotschedules/id331177181?uo=2",
+          "attributes": { "im:id": "331177181" }
+        }
+      }
+    ]
+  }
+}

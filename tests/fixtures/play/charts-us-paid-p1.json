@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "packageName": "com.mojang.minecraftpe",
+      "name": "Minecraft"
+    },
+    {
+      "packageName": "com.nimblebit.tinytower",
+      "name": "Tiny Tower"
+    }
+  ]
+}

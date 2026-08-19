@@ -311,4 +311,6 @@ test("createFixtureIosAdapter is the only iOS transport used by core", () => {
   const adapter = createFixtureIosAdapter();
   assert.equal(typeof adapter.getListing, "function");
   assert.equal(typeof adapter.getReviews, "function");
+  assert.equal(typeof adapter.getCharts, "function");
+  assert.equal(typeof adapter.search, "function");
 });

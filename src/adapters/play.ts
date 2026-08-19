@@ -6,9 +6,14 @@ import {
   assertReviewStars,
   listingHasForbiddenEstimateField,
   type AppListing,
+  type ChartEntry,
+  type ChartKind,
+  type ChartPage,
   type Country,
   type Review,
   type ReviewPage,
+  type SearchHit,
+  type SearchPage,
   type StoreAdapter,
 } from "../types.js";
 
@@ -48,19 +53,41 @@ export type PlayReviewsPayload = {
   reviews?: PlayReviewEntry[];
 };
 
-export type PlayFixtureKind = "details" | "reviews";
+export type PlayFixtureKind = "details" | "reviews" | "charts" | "search";
 
 export type PlayFixtureEntry = {
   kind: PlayFixtureKind;
-  id: string;
+  id?: string;
   country: Country;
   page?: number;
   file: string;
   status?: number;
+  chartKind?: ChartKind;
+  category?: string | null;
+  q?: string;
 };
 
 export type PlayFixtureIndex = {
   apps: PlayFixtureEntry[];
+};
+
+export type PlayChartEntry = {
+  rank?: number;
+  packageName?: string;
+  name?: string;
+};
+
+export type PlayChartsPayload = {
+  apps?: PlayChartEntry[];
+};
+
+export type PlaySearchHit = {
+  packageName?: string;
+  name?: string;
+};
+
+export type PlaySearchPayload = {
+  results?: PlaySearchHit[];
 };
 
 export type PlayAdapter = StoreAdapter;
@@ -71,6 +98,8 @@ const FIXTURES_DIR = join(
 );
 
 const PLAY_REVIEWS_PER_PAGE = 40;
+const PLAY_CHARTS_PER_PAGE = 20;
+const PLAY_SEARCH_PER_PAGE = 20;
 
 export function loadPlayFixtureIndex(): PlayFixtureIndex {
   const raw = readFileSync(join(FIXTURES_DIR, "index.json"), "utf8");
@@ -81,6 +110,27 @@ export function playDetailsUrl(id: string, country: Country): string {
   return `https://${PLAY_HOST}/store/apps/details?id=${encodeURIComponent(id)}&hl=en&gl=${country.toLowerCase()}`;
 }
 
+const PLAY_CHART_COLLECTIONS: Record<ChartKind, string> = {
+  free: "topselling_free",
+  paid: "topselling_paid",
+  grossing: "topgrossing",
+};
+
+export function playChartsUrl(
+  country: Country,
+  kind: ChartKind,
+  category: string | null,
+  page: number,
+): string {
+  const collection = PLAY_CHART_COLLECTIONS[kind];
+  const cat = category === null || category === "" ? "APPLICATION" : category;
+  return `https://${PLAY_HOST}/store/apps/category/${encodeURIComponent(cat)}/collection/${collection}?gl=${country.toLowerCase()}&hl=en&page=${page}`;
+}
+
+export function playSearchUrl(q: string, country: Country, page: number): string {
+  return `https://${PLAY_HOST}/store/search?q=${encodeURIComponent(q)}&c=apps&hl=en&gl=${country.toLowerCase()}&page=${page}`;
+}
+
 function readFixtureJson(file: string): unknown {
   return JSON.parse(readFileSync(join(FIXTURES_DIR, file), "utf8"));
 }
@@ -89,9 +139,9 @@ function samePlayId(left: string, right: string): boolean {
   return left.toLowerCase() === right.toLowerCase();
 }
 
-function findFixture(
+function findAppFixture(
   index: PlayFixtureIndex,
-  kind: PlayFixtureKind,
+  kind: "details" | "reviews",
   id: string,
   country: Country,
   page?: number,
@@ -103,7 +153,50 @@ function findFixture(
     if (kind === "reviews" && (entry.page ?? 1) !== (page ?? 1)) {
       return false;
     }
-    return samePlayId(entry.id, id);
+    return entry.id !== undefined && samePlayId(entry.id, id);
+  });
+}
+
+function sameCategory(left: string | null | undefined, right: string | null): boolean {
+  const normalized = left === undefined || left === "" ? null : left;
+  return normalized === right;
+}
+
+function findChartFixture(
+  index: PlayFixtureIndex,
+  country: Country,
+  kind: ChartKind,
+  category: string | null,
+  page: number,
+): PlayFixtureEntry | undefined {
+  return index.apps.find((entry) => {
+    if (entry.kind !== "charts" || entry.country !== country) {
+      return false;
+    }
+    if (entry.chartKind !== kind) {
+      return false;
+    }
+    if ((entry.page ?? 1) !== page) {
+      return false;
+    }
+    return sameCategory(entry.category, category);
+  });
+}
+
+function findSearchFixture(
+  index: PlayFixtureIndex,
+  country: Country,
+  q: string,
+  page: number,
+): PlayFixtureEntry | undefined {
+  return index.apps.find((entry) => {
+    if (entry.kind !== "search" || entry.country !== country) {
+      return false;
+    }
+    if ((entry.page ?? 1) !== page) {
+      return false;
+    }
+    return (entry.q ?? "").toLowerCase() === q.toLowerCase();
   });
 }
 
@@ -196,6 +289,76 @@ export function parsePlayDetails(
   return listing;
 }
 
+export function parsePlayCharts(
+  payload: PlayChartsPayload,
+  country: Country,
+  kind: ChartKind,
+  category: string | null,
+  page: number,
+): ChartPage {
+  if (!Array.isArray(payload.apps)) {
+    throw new StoreApiError("upstream_blocked", "Play charts payload is malformed.");
+  }
+  const results: ChartEntry[] = [];
+  for (const entry of payload.apps) {
+    const id = textOrNull(entry.packageName);
+    const name = textOrNull(entry.name);
+    if (id === null || name === null) {
+      throw new StoreApiError("upstream_blocked", "Chart entry is missing id or name.");
+    }
+    results.push({
+      rank: results.length + 1,
+      id,
+      name,
+    });
+  }
+  const pageData: ChartPage = {
+    store: "play",
+    country,
+    kind,
+    category,
+    page,
+    hasMore: results.length >= PLAY_CHARTS_PER_PAGE,
+    results,
+  };
+  if (listingHasForbiddenEstimateField(pageData)) {
+    throw new StoreApiError("internal", "Charts must not include download estimates.");
+  }
+  return pageData;
+}
+
+export function parsePlaySearch(
+  payload: PlaySearchPayload,
+  country: Country,
+  q: string,
+  page: number,
+): SearchPage {
+  if (!Array.isArray(payload.results)) {
+    throw new StoreApiError("upstream_blocked", "Play search payload is malformed.");
+  }
+  const results: SearchHit[] = [];
+  for (const hit of payload.results) {
+    const id = textOrNull(hit.packageName);
+    const name = textOrNull(hit.name);
+    if (id === null || name === null) {
+      throw new StoreApiError("upstream_blocked", "Search hit is missing id or name.");
+    }
+    results.push({ id, name });
+  }
+  const pageData: SearchPage = {
+    store: "play",
+    country,
+    q,
+    page,
+    hasMore: results.length >= PLAY_SEARCH_PER_PAGE,
+    results,
+  };
+  if (listingHasForbiddenEstimateField(pageData)) {
+    throw new StoreApiError("internal", "Search must not include download estimates.");
+  }
+  return pageData;
+}
+
 export function parsePlayReviews(
   payload: PlayReviewsPayload,
   country: Country,
@@ -251,7 +414,7 @@ export function createFixturePlayAdapter(
 ): PlayAdapter {
   return {
     async getListing(id, country) {
-      const match = findFixture(index, "details", id, country);
+      const match = findAppFixture(index, "details", id, country);
       if (match === undefined) {
         throw new StoreApiError("app_not_found", "App was not found on Google Play.");
       }
@@ -268,7 +431,7 @@ export function createFixturePlayAdapter(
       return parsePlayDetails(payload, id, country, new Date().toISOString());
     },
     async getReviews(id, country, page) {
-      const match = findFixture(index, "reviews", id, country, page);
+      const match = findAppFixture(index, "reviews", id, country, page);
       if (match === undefined) {
         await this.getListing(id, country);
         return {
@@ -289,6 +452,49 @@ export function createFixturePlayAdapter(
       }
       const payload = readFixtureJson(match.file) as PlayReviewsPayload;
       return parsePlayReviews(payload, country, page);
+    },
+    async getCharts(country, kind, category, page) {
+      const match = findChartFixture(index, country, kind, category, page);
+      if (match === undefined) {
+        return {
+          store: "play",
+          country,
+          kind,
+          category,
+          page,
+          hasMore: false,
+          results: [],
+        };
+      }
+      if ((match.status ?? 200) >= 500) {
+        throw new StoreApiError(
+          "upstream_blocked",
+          "Play charts upstream is blocked.",
+        );
+      }
+      const payload = readFixtureJson(match.file) as PlayChartsPayload;
+      return parsePlayCharts(payload, country, kind, category, page);
+    },
+    async search(country, q, page) {
+      const match = findSearchFixture(index, country, q, page);
+      if (match === undefined) {
+        return {
+          store: "play",
+          country,
+          q,
+          page,
+          hasMore: false,
+          results: [],
+        };
+      }
+      if ((match.status ?? 200) >= 500) {
+        throw new StoreApiError(
+          "upstream_blocked",
+          "Play search upstream is blocked.",
+        );
+      }
+      const payload = readFixtureJson(match.file) as PlaySearchPayload;
+      return parsePlaySearch(payload, country, q, page);
     },
   };
 }

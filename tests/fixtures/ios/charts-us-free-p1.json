@@ -1,0 +1,34 @@
+{
+  "feed": {
+    "author": {
+      "name": { "label": "iTunes Store" },
+      "uri": { "label": "http://www.apple.com/itunes/" }
+    },
+    "entry": [
+      {
+        "im:name": { "label": "Instagram" },
+        "title": { "label": "Instagram - Instagram, Inc." },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/instagram/id389801252?uo=2",
+          "attributes": { "im:id": "389801252" }
+        }
+      },
+      {
+        "im:name": { "label": "WhatsApp Messenger" },
+        "title": { "label": "WhatsApp Messenger - WhatsApp Inc." },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/whatsapp-messenger/id310633997?uo=2",
+          "attributes": { "im:id": "310633997" }
+        }
+      },
+      {
+        "im:name": { "label": "TikTok" },
+        "title": { "label": "TikTok - TikTok Ltd." },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/tiktok/id835599320?uo=2",
+          "attributes": { "im:id": "835599320" }
+        }
+      }
+    ]
+  }
+}

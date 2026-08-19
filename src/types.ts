@@ -1,0 +1,165 @@
+export type Store = "ios" | "play";
+
+export type Country = "US" | "GB";
+
+export type KeyPrefix = "st_live" | "st_test";
+
+export type ErrorCode =
+  | "invalid_request"
+  | "unauthorized"
+  | "payment_required"
+  | "app_not_found"
+  | "store_unsupported"
+  | "country_unsupported"
+  | "not_implemented"
+  | "rate_limited"
+  | "upstream_blocked"
+  | "internal";
+
+export const STORES: readonly Store[] = ["ios", "play"];
+
+export const COUNTRIES: readonly Country[] = ["US", "GB"];
+
+export const ERROR_CODES: readonly ErrorCode[] = [
+  "invalid_request",
+  "unauthorized",
+  "payment_required",
+  "app_not_found",
+  "store_unsupported",
+  "country_unsupported",
+  "not_implemented",
+  "rate_limited",
+  "upstream_blocked",
+  "internal",
+];
+
+export const FORBIDDEN_ESTIMATE_FIELDS: readonly string[] = [
+  "downloads",
+  "downloadCount",
+  "downloadEstimate",
+  "downloadsEstimate",
+  "revenue",
+  "revenueEstimate",
+  "estimatedDownloads",
+  "estimatedRevenue",
+];
+
+export type Ok<T> = {
+  data: T;
+  meta: {
+    cached: boolean;
+    creditsCharged: number;
+    requestId: string;
+    upstreamMs: number;
+  };
+};
+
+export type Err = {
+  error: { code: ErrorCode; message: string; retryable: boolean };
+  meta: { creditsCharged: 0; requestId: string };
+};
+
+export type AppListing = {
+  store: Store;
+  id: string;
+  bundleId: string | null;
+  name: string;
+  developer: string | null;
+  url: string;
+  iconUrl: string | null;
+  category: string | null;
+  rating: { average: number | null; count: number | null };
+  price: { amount: number; currency: string } | null;
+  description: string;
+  version: string | null;
+  updatedAt: string | null;
+  countries: string[];
+  fetchedAt: string;
+};
+
+export type Review = {
+  id: string | null;
+  stars: number;
+  title: string | null;
+  body: string;
+  author: string | null;
+  version: string | null;
+  createdAt: string | null;
+};
+
+export type ReviewPage = {
+  page: number;
+  country: Country;
+  hasMore: boolean;
+  reviews: Review[];
+};
+
+export function isStore(value: string): value is Store {
+  return value === "ios" || value === "play";
+}
+
+export function isCountry(value: string): value is Country {
+  return value === "US" || value === "GB";
+}
+
+export function parseStore(value: string | undefined): Store | null {
+  if (value === undefined || value === "") {
+    return null;
+  }
+  const normalized = value.toLowerCase();
+  return isStore(normalized) ? normalized : null;
+}
+
+export function parseCountry(value: string | undefined): Country | null {
+  if (value === undefined || value === "") {
+    return "US";
+  }
+  const normalized = value.toUpperCase();
+  return isCountry(normalized) ? normalized : null;
+}
+
+export function isIosNumericId(id: string): boolean {
+  return /^\d+$/.test(id);
+}
+
+export function isPlayPackageId(id: string): boolean {
+  return /^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(id);
+}
+
+export function isIosBundleId(id: string): boolean {
+  return isPlayPackageId(id);
+}
+
+export function assertReviewStars(stars: number): void {
+  if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+    throw new Error("review stars must be an integer 1-5");
+  }
+}
+
+export function listingHasForbiddenEstimateField(value: unknown): boolean {
+  return collectForbiddenEstimateFields(value).length > 0;
+}
+
+export function collectForbiddenEstimateFields(
+  value: unknown,
+  path = "",
+): string[] {
+  if (value === null || typeof value !== "object") {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) =>
+      collectForbiddenEstimateFields(item, `${path}[${index}]`),
+    );
+  }
+  const record = value as Record<string, unknown>;
+  const found: string[] = [];
+  for (const key of Object.keys(record)) {
+    const next = path === "" ? key : `${path}.${key}`;
+    if (FORBIDDEN_ESTIMATE_FIELDS.includes(key)) {
+      found.push(next);
+    }
+    found.push(...collectForbiddenEstimateFields(record[key], next));
+  }
+  return found;
+}

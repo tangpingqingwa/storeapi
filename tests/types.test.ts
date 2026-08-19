@@ -3,6 +3,10 @@ import { test } from "node:test";
 import {
   APP_LISTING_KEYS,
   assertReviewStars,
+  CHART_ENTRY_KEYS,
+  CHART_KINDS,
+  CHART_PAGE_KEYS,
+  chartPageUsesUnifiedSchema,
   collectForbiddenEstimateFields,
   COUNTRIES,
   FORBIDDEN_ESTIMATE_FIELDS,
@@ -11,15 +15,21 @@ import {
   isPlayPackageId,
   listingHasForbiddenEstimateField,
   listingUsesUnifiedSchema,
+  parseChartKind,
   parseCountry,
   parseStore,
   REVIEW_KEYS,
   REVIEW_PAGE_KEYS,
   reviewPageUsesUnifiedSchema,
+  SEARCH_HIT_KEYS,
+  SEARCH_PAGE_KEYS,
+  searchPageUsesUnifiedSchema,
   STORES,
   type AppListing,
+  type ChartPage,
   type Review,
   type ReviewPage,
+  type SearchPage,
 } from "../src/types.js";
 
 test("store enum is ios | play only", () => {
@@ -29,6 +39,16 @@ test("store enum is ios | play only", () => {
   assert.equal(parseStore("amazon"), null);
   assert.equal(parseStore(""), null);
   assert.equal(parseStore(undefined), null);
+});
+
+test("chart kind is free | paid | grossing", () => {
+  assert.deepEqual([...CHART_KINDS], ["free", "paid", "grossing"]);
+  assert.equal(parseChartKind("free"), "free");
+  assert.equal(parseChartKind("PAID"), "paid");
+  assert.equal(parseChartKind("grossing"), "grossing");
+  assert.equal(parseChartKind("trending"), null);
+  assert.equal(parseChartKind(""), null);
+  assert.equal(parseChartKind(undefined), null);
 });
 
 test("country enum is US | GB; default US; JP is unsupported", () => {
@@ -105,8 +125,30 @@ test("listing and review types have no download-estimate fields", () => {
     collectForbiddenEstimateFields({ name: "x", downloadEstimate: 9 }),
     ["downloadEstimate"],
   );
+  const charts: ChartPage = {
+    store: "ios",
+    country: "US",
+    kind: "free",
+    category: null,
+    page: 1,
+    hasMore: false,
+    results: [{ rank: 1, id: "389801252", name: "Instagram" }],
+  };
+  const search: SearchPage = {
+    store: "ios",
+    country: "US",
+    q: "instagram",
+    page: 1,
+    hasMore: false,
+    results: [{ id: "389801252", name: "Instagram" }],
+  };
+
   assert.equal(listingUsesUnifiedSchema(listing), true);
   assert.equal(reviewPageUsesUnifiedSchema(reviews), true);
+  assert.equal(chartPageUsesUnifiedSchema(charts), true);
+  assert.equal(searchPageUsesUnifiedSchema(search), true);
+  assert.equal(listingHasForbiddenEstimateField(charts), false);
+  assert.equal(listingHasForbiddenEstimateField(search), false);
 });
 
 test("iOS and Play listings share one key set; reviews share one key set", () => {
@@ -170,8 +212,29 @@ test("iOS and Play listings share one key set; reviews share one key set", () =>
     "createdAt",
   ]);
   assert.deepEqual([...REVIEW_PAGE_KEYS], ["page", "country", "hasMore", "reviews"]);
+  assert.deepEqual([...CHART_ENTRY_KEYS], ["rank", "id", "name"]);
+  assert.deepEqual([...CHART_PAGE_KEYS], [
+    "store",
+    "country",
+    "kind",
+    "category",
+    "page",
+    "hasMore",
+    "results",
+  ]);
+  assert.deepEqual([...SEARCH_HIT_KEYS], ["id", "name"]);
+  assert.deepEqual([...SEARCH_PAGE_KEYS], [
+    "store",
+    "country",
+    "q",
+    "page",
+    "hasMore",
+    "results",
+  ]);
   assert.equal(APP_LISTING_KEYS.includes("downloadEstimate" as never), false);
   assert.equal(REVIEW_KEYS.includes("downloadEstimate" as never), false);
+  assert.equal(CHART_ENTRY_KEYS.includes("downloadEstimate" as never), false);
+  assert.equal(SEARCH_HIT_KEYS.includes("downloadEstimate" as never), false);
   assert.equal(listingUsesUnifiedSchema(listing), true);
   assert.equal(reviewPageUsesUnifiedSchema(reviews), true);
   assert.equal(

@@ -71,6 +71,73 @@
       "page": 1,
       "file": "reviews-blocked.json",
       "status": 503
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "free",
+      "page": 1,
+      "file": "charts-us-free-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "paid",
+      "page": 1,
+      "file": "charts-us-paid-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "grossing",
+      "page": 1,
+      "file": "charts-us-grossing-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "GB",
+      "chartKind": "free",
+      "page": 1,
+      "file": "charts-gb-free-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "free",
+      "category": "6008",
+      "page": 1,
+      "file": "charts-us-free-photo-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "free",
+      "category": "blocked",
+      "page": 1,
+      "file": "charts-blocked.json",
+      "status": 503
+    },
+    {
+      "kind": "search",
+      "country": "US",
+      "q": "instagram",
+      "page": 1,
+      "file": "search-instagram-us-p1.json"
+    },
+    {
+      "kind": "search",
+      "country": "GB",
+      "q": "instagram",
+      "page": 1,
+      "file": "search-instagram-gb-p1.json"
+    },
+    {
+      "kind": "search",
+      "country": "US",
+      "q": "blocked",
+      "page": 1,
+      "file": "search-blocked.json",
+      "status": 503
     }
   ]
 }

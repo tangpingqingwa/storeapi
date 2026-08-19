@@ -60,6 +60,73 @@
       "page": 1,
       "file": "reviews-blocked.json",
       "status": 503
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "free",
+      "page": 1,
+      "file": "charts-us-free-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "paid",
+      "page": 1,
+      "file": "charts-us-paid-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "grossing",
+      "page": 1,
+      "file": "charts-us-grossing-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "GB",
+      "chartKind": "free",
+      "page": 1,
+      "file": "charts-gb-free-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "free",
+      "category": "VIDEO_PLAYERS",
+      "page": 1,
+      "file": "charts-us-free-video-p1.json"
+    },
+    {
+      "kind": "charts",
+      "country": "US",
+      "chartKind": "free",
+      "category": "blocked",
+      "page": 1,
+      "file": "charts-blocked.json",
+      "status": 503
+    },
+    {
+      "kind": "search",
+      "country": "US",
+      "q": "youtube",
+      "page": 1,
+      "file": "search-youtube-us-p1.json"
+    },
+    {
+      "kind": "search",
+      "country": "GB",
+      "q": "youtube",
+      "page": 1,
+      "file": "search-youtube-gb-p1.json"
+    },
+    {
+      "kind": "search",
+      "country": "US",
+      "q": "blocked",
+      "page": 1,
+      "file": "search-blocked.json",
+      "status": 503
     }
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "packageName": "com.whatsapp",
+      "name": "WhatsApp Messenger"
+    },
+    {
+      "packageName": "com.google.android.youtube",
+      "name": "YouTube"
+    }
+  ]
+}

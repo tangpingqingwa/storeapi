@@ -1,0 +1,20 @@
+{
+  "feed": {
+    "entry": [
+      {
+        "im:name": { "label": "YouTube" },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/youtube/id544007664?uo=2",
+          "attributes": { "im:id": "544007664" }
+        }
+      },
+      {
+        "im:name": { "label": "Disney+" },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/disney/id1446075923?uo=2",
+          "attributes": { "im:id": "1446075923" }
+        }
+      }
+    ]
+  }
+}

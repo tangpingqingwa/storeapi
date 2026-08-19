@@ -122,9 +122,80 @@ export type ReviewPage = {
   reviews: Review[];
 };
 
+export type ChartKind = "free" | "paid" | "grossing";
+
+export const CHART_KINDS: readonly ChartKind[] = ["free", "paid", "grossing"];
+
+export type ChartEntry = {
+  rank: number;
+  id: string;
+  name: string;
+};
+
+export const CHART_ENTRY_KEYS = [
+  "rank",
+  "id",
+  "name",
+] as const satisfies readonly (keyof ChartEntry)[];
+
+export type ChartPage = {
+  store: Store;
+  country: Country;
+  kind: ChartKind;
+  category: string | null;
+  page: number;
+  hasMore: boolean;
+  results: ChartEntry[];
+};
+
+export const CHART_PAGE_KEYS = [
+  "store",
+  "country",
+  "kind",
+  "category",
+  "page",
+  "hasMore",
+  "results",
+] as const satisfies readonly (keyof ChartPage)[];
+
+export type SearchHit = {
+  id: string;
+  name: string;
+};
+
+export const SEARCH_HIT_KEYS = [
+  "id",
+  "name",
+] as const satisfies readonly (keyof SearchHit)[];
+
+export type SearchPage = {
+  store: Store;
+  country: Country;
+  q: string;
+  page: number;
+  hasMore: boolean;
+  results: SearchHit[];
+};
+
+export const SEARCH_PAGE_KEYS = [
+  "store",
+  "country",
+  "q",
+  "page",
+  "hasMore",
+  "results",
+] as const satisfies readonly (keyof SearchPage)[];
+
 export type StoreAdapter = {
   getListing(id: string, country: Country): Promise<AppListing>;
   getReviews(id: string, country: Country, page: number): Promise<ReviewPage>;
+  getCharts(
+    country: Country,
+    kind: ChartKind,
+    category: string | null,
+    page: number,
+  ): Promise<ChartPage>;
+  search(country: Country, q: string, page: number): Promise<SearchPage>;
 };
 
 export type StoreAdapters = {
@@ -163,6 +234,20 @@ export function reviewPageUsesUnifiedSchema(page: ReviewPage): boolean {
   return page.reviews.every((review) => sameKeySet(Object.keys(review), REVIEW_KEYS));
 }
 
+export function chartPageUsesUnifiedSchema(page: ChartPage): boolean {
+  if (!sameKeySet(Object.keys(page), CHART_PAGE_KEYS)) {
+    return false;
+  }
+  return page.results.every((entry) => sameKeySet(Object.keys(entry), CHART_ENTRY_KEYS));
+}
+
+export function searchPageUsesUnifiedSchema(page: SearchPage): boolean {
+  if (!sameKeySet(Object.keys(page), SEARCH_PAGE_KEYS)) {
+    return false;
+  }
+  return page.results.every((hit) => sameKeySet(Object.keys(hit), SEARCH_HIT_KEYS));
+}
+
 export function isStore(value: string): value is Store {
   return value === "ios" || value === "play";
 }
@@ -185,6 +270,18 @@ export function parseCountry(value: string | undefined): Country | null {
   }
   const normalized = value.toUpperCase();
   return isCountry(normalized) ? normalized : null;
+}
+
+export function isChartKind(value: string): value is ChartKind {
+  return value === "free" || value === "paid" || value === "grossing";
+}
+
+export function parseChartKind(value: string | undefined): ChartKind | null {
+  if (value === undefined || value === "") {
+    return null;
+  }
+  const normalized = value.toLowerCase();
+  return isChartKind(normalized) ? normalized : null;
 }
 
 export function isIosNumericId(id: string): boolean {

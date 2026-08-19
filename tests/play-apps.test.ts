@@ -318,4 +318,6 @@ test("createFixturePlayAdapter is the only Play transport used by core", () => {
   const adapter = createFixturePlayAdapter();
   assert.equal(typeof adapter.getListing, "function");
   assert.equal(typeof adapter.getReviews, "function");
+  assert.equal(typeof adapter.getCharts, "function");
+  assert.equal(typeof adapter.search, "function");
 });

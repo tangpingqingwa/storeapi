@@ -1,0 +1,52 @@
+{
+  "apps": [
+    {
+      "kind": "details",
+      "id": "com.google.android.youtube",
+      "country": "US",
+      "file": "details-youtube-us.json"
+    },
+    {
+      "kind": "reviews",
+      "id": "com.google.android.youtube",
+      "country": "US",
+      "page": 1,
+      "file": "reviews-youtube-us-p1.json"
+    },
+    {
+      "kind": "details",
+      "id": "com.storeapi.emptyreviews",
+      "country": "US",
+      "file": "details-empty-reviews-us.json"
+    },
+    {
+      "kind": "reviews",
+      "id": "com.storeapi.emptyreviews",
+      "country": "US",
+      "page": 1,
+      "file": "reviews-empty-us-p1.json"
+    },
+    {
+      "kind": "details",
+      "id": "com.storeapi.missing",
+      "country": "US",
+      "file": "details-missing.json",
+      "status": 404
+    },
+    {
+      "kind": "details",
+      "id": "com.storeapi.blocked",
+      "country": "US",
+      "file": "details-blocked.json",
+      "status": 503
+    },
+    {
+      "kind": "reviews",
+      "id": "com.storeapi.blocked",
+      "country": "US",
+      "page": 1,
+      "file": "reviews-blocked.json",
+      "status": 503
+    }
+  ]
+}

@@ -1,19 +1,25 @@
-import {
-  createFixtureIosAdapter,
-  type IosAdapter,
-} from "../adapters/ios.js";
+import { createFixtureIosAdapter } from "../adapters/ios.js";
+import { createFixturePlayAdapter } from "../adapters/play.js";
 import {
   listingHasForbiddenEstimateField,
+  listingUsesUnifiedSchema,
   type AppListing,
+  type StoreAdapters,
 } from "../types.js";
 import { StoreApiError } from "./errors.js";
 import { resolveStoreRequest } from "./params.js";
 
-const defaultAdapter = createFixtureIosAdapter();
+const defaultAdapters: StoreAdapters = {
+  ios: createFixtureIosAdapter(),
+  play: createFixturePlayAdapter(),
+};
 
 export function assertListingSafe(listing: AppListing): AppListing {
   if (listingHasForbiddenEstimateField(listing)) {
     throw new StoreApiError("internal", "Listing must not include download estimates.");
+  }
+  if (!listingUsesUnifiedSchema(listing)) {
+    throw new StoreApiError("internal", "Listing does not match the unified schema.");
   }
   if (listing.name.trim() === "") {
     throw new StoreApiError("upstream_blocked", "Listing is missing a name.");
@@ -23,8 +29,8 @@ export function assertListingSafe(listing: AppListing): AppListing {
 
 export async function getApp(
   input: { store?: string; id?: string; country?: string },
-  adapter: IosAdapter = defaultAdapter,
+  adapters: StoreAdapters = defaultAdapters,
 ): Promise<AppListing> {
   const req = resolveStoreRequest(input);
-  return assertListingSafe(await adapter.getListing(req.id, req.country));
+  return assertListingSafe(await adapters[req.store].getListing(req.id, req.country));
 }

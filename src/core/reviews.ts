@@ -1,21 +1,27 @@
-import {
-  createFixtureIosAdapter,
-  type IosAdapter,
-} from "../adapters/ios.js";
+import { createFixtureIosAdapter } from "../adapters/ios.js";
+import { createFixturePlayAdapter } from "../adapters/play.js";
 import {
   assertReviewStars,
   isIosNumericId,
   listingHasForbiddenEstimateField,
+  reviewPageUsesUnifiedSchema,
   type ReviewPage,
+  type StoreAdapters,
 } from "../types.js";
 import { StoreApiError } from "./errors.js";
 import { parsePage, resolveStoreRequest } from "./params.js";
 
-const defaultAdapter = createFixtureIosAdapter();
+const defaultAdapters: StoreAdapters = {
+  ios: createFixtureIosAdapter(),
+  play: createFixturePlayAdapter(),
+};
 
 export function assertReviewPageSafe(page: ReviewPage): ReviewPage {
   if (listingHasForbiddenEstimateField(page)) {
     throw new StoreApiError("internal", "Reviews must not include download estimates.");
+  }
+  if (!reviewPageUsesUnifiedSchema(page)) {
+    throw new StoreApiError("internal", "Reviews do not match the unified schema.");
   }
   for (const review of page.reviews) {
     try {
@@ -40,7 +46,7 @@ export async function listReviews(
     country?: string;
     page?: string | number;
   },
-  adapter: IosAdapter = defaultAdapter,
+  adapters: StoreAdapters = defaultAdapters,
 ): Promise<ReviewPage> {
   const req = resolveStoreRequest(input);
   const page = parsePage(input.page);
@@ -48,9 +54,11 @@ export async function listReviews(
     throw new StoreApiError("invalid_request", "page must be an integer >= 1.");
   }
   let id = req.id;
-  if (!isIosNumericId(id)) {
-    const listing = await adapter.getListing(id, req.country);
+  if (req.store === "ios" && !isIosNumericId(id)) {
+    const listing = await adapters.ios.getListing(id, req.country);
     id = listing.id;
   }
-  return assertReviewPageSafe(await adapter.getReviews(id, req.country, page));
+  return assertReviewPageSafe(
+    await adapters[req.store].getReviews(id, req.country, page),
+  );
 }

@@ -1,0 +1,19 @@
+{
+  "packageName": "com.storeapi.emptyreviews",
+  "name": "Fixture Empty Reviews",
+  "author": { "name": "StoreAPI Fixtures" },
+  "url": "https://play.google.com/store/apps/details?id=com.storeapi.emptyreviews&hl=en&gl=us",
+  "image": null,
+  "applicationCategory": "Tools",
+  "aggregateRating": {
+    "ratingValue": 0,
+    "ratingCount": 0
+  },
+  "offers": {
+    "price": 0,
+    "priceCurrency": "USD"
+  },
+  "description": "Recorded fixture for a Play app with no customer reviews.",
+  "softwareVersion": "1.0",
+  "datePublished": "2024-06-01T00:00:00Z"
+}

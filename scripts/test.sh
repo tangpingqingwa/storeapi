@@ -37,6 +37,25 @@ echo "== markdown is UTF-8 text =="
 file -b --mime-encoding README.md SPEC.md BUILD.md CONTRIBUTING.md | grep -qiE 'utf-8|us-ascii' \
   || fail "docs are not UTF-8/ASCII"
 
+echo "== iOS fixtures are recorded JSON, not live App Store =="
+if [[ -d tests/fixtures/ios ]]; then
+  ls tests/fixtures/ios/*.json >/dev/null 2>&1 \
+    || fail "tests/fixtures/ios has no recorded JSON"
+  grep -q '"Instagram"' tests/fixtures/ios/lookup-instagram-us.json \
+    || fail "missing recorded iOS US listing fixture"
+  grep -q '"im:rating"' tests/fixtures/ios/reviews-instagram-us-p1.json \
+    || fail "missing recorded iOS US reviews fixture"
+  if grep -RInE 'adapters/' src/http >/dev/null 2>&1; then
+    fail "HTTP must call core/* only"
+  fi
+  if grep -RInE 'https?://itunes\.apple\.com|https?://apps\.apple\.com' src/core src/http >/dev/null 2>&1; then
+    fail "core/http must not call Apple; HTTP uses core/* only"
+  fi
+  if grep -RInE '\bfetch\s*\(' src/adapters src/core src/http >/dev/null 2>&1; then
+    fail "live fetch() is not allowed; iOS stays on recorded fixtures"
+  fi
+fi
+
 if [[ -f package.json ]]; then
   echo "== install =="
   if [[ ! -d node_modules ]]; then

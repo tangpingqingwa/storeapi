@@ -1,0 +1,78 @@
+{
+  "feed": {
+    "author": {
+      "name": { "label": "iTunes Store" },
+      "uri": { "label": "http://www.apple.com/itunes/" }
+    },
+    "entry": [
+      {
+        "im:name": { "label": "Instagram" },
+        "id": {
+          "label": "https://itunes.apple.com/us/app/instagram/id389801252?uo=2",
+          "attributes": { "im:id": "389801252" }
+        },
+        "title": { "label": "Instagram - Instagram, Inc." }
+      },
+      {
+        "author": { "name": { "label": "photo.fan" } },
+        "updated": { "label": "2026-01-12T18:22:11-07:00" },
+        "im:rating": { "label": "5" },
+        "im:version": { "label": "384.0" },
+        "id": { "label": "11890000001" },
+        "title": { "label": "Still the best camera roll" },
+        "content": {
+          "label": "Stories and Reels work. Direct is fine. This is a real review from the recorded RSS fixture.",
+          "attributes": { "type": "text" }
+        }
+      },
+      {
+        "author": { "name": { "label": "night.owl" } },
+        "updated": { "label": "2026-01-11T09:04:00-07:00" },
+        "im:rating": { "label": "4" },
+        "im:version": { "label": "384.0" },
+        "id": { "label": "11890000002" },
+        "title": { "label": "Mostly good" },
+        "content": {
+          "label": "Feed is usable. Ads are loud but the app still does what it says.",
+          "attributes": { "type": "text" }
+        }
+      },
+      {
+        "author": { "name": { "label": "bug.hunter" } },
+        "updated": { "label": "2026-01-10T21:41:33-07:00" },
+        "im:rating": { "label": "2" },
+        "im:version": { "label": "383.1" },
+        "id": { "label": "11890000003" },
+        "title": { "label": "Crashes on share sheet" },
+        "content": {
+          "label": "Sharing a photo from Photos crashed twice today. Stars are 2 because the rest still works.",
+          "attributes": { "type": "text" }
+        }
+      },
+      {
+        "author": { "name": { "label": "quiet.reader" } },
+        "updated": { "label": "2026-01-09T07:15:44-07:00" },
+        "im:rating": { "label": "1" },
+        "im:version": { "label": "383.1" },
+        "id": { "label": "11890000004" },
+        "title": { "label": "Login loop" },
+        "content": {
+          "label": "Stuck on a login loop after the last update. Body must stay this recorded text.",
+          "attributes": { "type": "text" }
+        }
+      },
+      {
+        "author": { "name": { "label": "ok.user" } },
+        "updated": { "label": "2026-01-08T14:03:09-07:00" },
+        "im:rating": { "label": "3" },
+        "im:version": { "label": "382.0" },
+        "id": { "label": "11890000005" },
+        "title": { "label": "Fine" },
+        "content": {
+          "label": "It is fine. Three stars for a recorded middle rating.",
+          "attributes": { "type": "text" }
+        }
+      }
+    ]
+  }
+}

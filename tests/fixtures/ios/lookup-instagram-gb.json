@@ -1,0 +1,24 @@
+{
+  "resultCount": 1,
+  "results": [
+    {
+      "trackId": 389801252,
+      "trackName": "Instagram",
+      "bundleId": "com.burbn.instagram",
+      "artistName": "Instagram, Inc.",
+      "trackViewUrl": "https://apps.apple.com/gb/app/instagram/id389801252?uo=4",
+      "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/instagram/100x100bb.jpg",
+      "artworkUrl512": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/instagram/512x512bb.jpg",
+      "primaryGenreName": "Photo & Video",
+      "averageUserRating": 4.72,
+      "userRatingCount": 4120881,
+      "formattedPrice": "Free",
+      "price": 0,
+      "currency": "GBP",
+      "description": "Bringing you closer to the people and things you love. Instagram is a simple way to capture and share the world's moments. Recorded UK storefront fixture.",
+      "version": "384.0",
+      "currentVersionReleaseDate": "2026-01-15T12:00:00Z",
+      "releaseDate": "2010-10-06T08:00:00Z"
+    }
+  ]
+}

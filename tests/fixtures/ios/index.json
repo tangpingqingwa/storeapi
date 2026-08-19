@@ -21,6 +21,25 @@
     },
     {
       "kind": "lookup",
+      "id": "389801252",
+      "country": "GB",
+      "file": "lookup-instagram-gb.json"
+    },
+    {
+      "kind": "lookup",
+      "id": "com.burbn.instagram",
+      "country": "GB",
+      "file": "lookup-instagram-gb.json"
+    },
+    {
+      "kind": "reviews",
+      "id": "389801252",
+      "country": "GB",
+      "page": 1,
+      "file": "reviews-instagram-gb-p1.json"
+    },
+    {
+      "kind": "lookup",
       "id": "999000001",
       "country": "US",
       "file": "lookup-empty-reviews-us.json"

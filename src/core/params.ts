@@ -9,8 +9,6 @@ import {
 } from "../types.js";
 import { StoreApiError } from "./errors.js";
 
-export const UK_NOT_IMPLEMENTED = "UK storefronts are not implemented yet.";
-
 export type ResolvedStoreRequest = {
   store: Store;
   id: string;
@@ -46,9 +44,6 @@ export function resolveStoreRequest(input: {
       "country_unsupported",
       "Country must be US or GB.",
     );
-  }
-  if (country === "GB") {
-    throw new StoreApiError("not_implemented", UK_NOT_IMPLEMENTED);
   }
   const id = input.id?.trim() ?? "";
   if (id === "") {

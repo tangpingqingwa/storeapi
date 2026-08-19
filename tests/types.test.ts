@@ -38,6 +38,8 @@ test("country enum is US | GB; default US; JP is unsupported", () => {
   assert.equal(parseCountry("us"), "US");
   assert.equal(parseCountry("GB"), "GB");
   assert.equal(parseCountry("gb"), "GB");
+  assert.equal(parseCountry("uk"), null);
+  assert.equal(parseCountry("UK"), null);
   assert.equal(parseCountry("JP"), null);
   assert.equal(parseCountry("jp"), null);
 });

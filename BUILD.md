@@ -30,7 +30,7 @@ v1: **501 `not_implemented`**, 0 credits, hidden from homepage, until a later PR
 
 ## 4. Tests
 
-Fixtures: one top free iOS US app, one Play US app, review page 1 each, empty reviews app, JP country → 422.  
+Fixtures: one top free iOS US app, one Play US app, review page 1 each, empty reviews app, iOS/Play GB listing + reviews page 1, JP country → 422.  
 Assert review `stars` is integer 1–5. Fail if generator would invent ids.
 
 ---
@@ -51,7 +51,9 @@ Assert review `stars` is integer 1–5. Fail if generator would invent ids.
 - **Acceptance:** SPEC 2, 4, 5, 7
 
 ### PR 4: UK country param
+- **Files:** adapters fixture indexes, tests/fixtures/*-gb*, core/params.ts, tests
 - **Dependencies:** PR 3
+- **Acceptance:** `country=GB` listings + reviews (US still default); JP still 422
 
 ### PR 5: charts + search
 - **Files:** core/charts.ts, core/search.ts

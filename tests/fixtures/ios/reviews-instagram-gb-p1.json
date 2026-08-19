@@ -1,0 +1,54 @@
+{
+  "feed": {
+    "author": {
+      "name": { "label": "iTunes Store" },
+      "uri": { "label": "http://www.apple.com/itunes/" }
+    },
+    "entry": [
+      {
+        "im:name": { "label": "Instagram" },
+        "id": {
+          "label": "https://itunes.apple.com/gb/app/instagram/id389801252?uo=2",
+          "attributes": { "im:id": "389801252" }
+        },
+        "title": { "label": "Instagram - Instagram, Inc." }
+      },
+      {
+        "author": { "name": { "label": "uk.photo.fan" } },
+        "updated": { "label": "2026-01-12T18:22:11+00:00" },
+        "im:rating": { "label": "5" },
+        "im:version": { "label": "384.0" },
+        "id": { "label": "11890001001" },
+        "title": { "label": "Still the best camera roll" },
+        "content": {
+          "label": "Stories and Reels work in the UK. This is a real review from the recorded GB RSS fixture.",
+          "attributes": { "type": "text" }
+        }
+      },
+      {
+        "author": { "name": { "label": "uk.night.owl" } },
+        "updated": { "label": "2026-01-11T09:04:00+00:00" },
+        "im:rating": { "label": "4" },
+        "im:version": { "label": "384.0" },
+        "id": { "label": "11890001002" },
+        "title": { "label": "Mostly good" },
+        "content": {
+          "label": "Feed is usable on the GB storefront. Ads are loud but the app still does what it says.",
+          "attributes": { "type": "text" }
+        }
+      },
+      {
+        "author": { "name": { "label": "uk.bug.hunter" } },
+        "updated": { "label": "2026-01-10T21:41:33+00:00" },
+        "im:rating": { "label": "2" },
+        "im:version": { "label": "383.1" },
+        "id": { "label": "11890001003" },
+        "title": { "label": "Crashes on share sheet" },
+        "content": {
+          "label": "Sharing a photo from Photos crashed twice today on iPhone UK. Stars are 2 because the rest still works.",
+          "attributes": { "type": "text" }
+        }
+      }
+    ]
+  }
+}

@@ -15,6 +15,19 @@
     },
     {
       "kind": "details",
+      "id": "com.google.android.youtube",
+      "country": "GB",
+      "file": "details-youtube-gb.json"
+    },
+    {
+      "kind": "reviews",
+      "id": "com.google.android.youtube",
+      "country": "GB",
+      "page": 1,
+      "file": "reviews-youtube-gb-p1.json"
+    },
+    {
+      "kind": "details",
       "id": "com.storeapi.emptyreviews",
       "country": "US",
       "file": "details-empty-reviews-us.json"

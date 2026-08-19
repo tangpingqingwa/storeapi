@@ -152,11 +152,19 @@ Few egress IPs. Store markup change fails CI.
 
 ## 7. MCP
 
-`get_app`, `list_reviews`, `keyword_search`.
+Streamable HTTP at `POST /mcp`. Same Bearer keys as REST. Tools wrap `core/*` 1:1:
+
+| tool | REST | credits |
+|---|---|---|
+| `get_app` | `GET /v1/apps/{store}/{id}` | 1 |
+| `list_reviews` | `GET /v1/apps/{store}/{id}/reviews` | 1 / page |
+| `keyword_search` | `GET /v1/search` | 1 / page |
 
 Skill: US/UK; no download estimates; do not write metadata.
 
 SEO vs Sensor Tower pricing pages.
+
+Public `GET /llms.txt` and `GET /.well-known/mcp/server-card.json`. Tool failures stay JSON-RPC HTTP 200 with `isError` and the REST error envelope in `structuredContent`. Auth failures stay the REST 401 envelope.
 
 ---
 

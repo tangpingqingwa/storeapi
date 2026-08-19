@@ -13,7 +13,7 @@ fail() {
 }
 
 echo "== contract files =="
-for f in README.md SPEC.md BUILD.md CONTRIBUTING.md scripts/test.sh; do
+for f in README.md SPEC.md BUILD.md CONTRIBUTING.md scripts/test.sh llms.txt; do
   [[ -f "$f" ]] || fail "missing $f"
   [[ -s "$f" ]] || fail "empty $f"
 done
@@ -34,7 +34,7 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 echo "== markdown is UTF-8 text =="
-file -b --mime-encoding README.md SPEC.md BUILD.md CONTRIBUTING.md | grep -qiE 'utf-8|us-ascii' \
+file -b --mime-encoding README.md SPEC.md BUILD.md CONTRIBUTING.md llms.txt | grep -qiE 'utf-8|us-ascii' \
   || fail "docs are not UTF-8/ASCII"
 
 echo "== iOS fixtures are recorded JSON, not live App Store =="
@@ -89,6 +89,33 @@ if [[ -d tests/fixtures/play ]]; then
   if grep -RInE '\bfetch\s*\(' src/adapters src/core src/http >/dev/null 2>&1; then
     fail "live fetch() is not allowed; Play stays on recorded fixtures"
   fi
+fi
+
+echo "== MCP tools wrap core/* (PR 6) =="
+[[ -f src/mcp/server.ts ]] || fail "missing src/mcp/server.ts"
+[[ -f src/mcp/tools.ts ]] || fail "missing src/mcp/tools.ts"
+[[ -f tests/mcp.test.ts ]] || fail "missing tests/mcp.test.ts"
+[[ -f llms.txt ]] || fail "missing llms.txt"
+grep -q 'get_app' src/mcp/tools.ts || fail "src/mcp/tools.ts missing get_app"
+grep -q 'list_reviews' src/mcp/tools.ts || fail "src/mcp/tools.ts missing list_reviews"
+grep -q 'keyword_search' src/mcp/tools.ts || fail "src/mcp/tools.ts missing keyword_search"
+grep -q 'getApp' src/mcp/tools.ts || fail "get_app must call core/apps"
+grep -q 'listReviews' src/mcp/tools.ts || fail "list_reviews must call core/reviews"
+grep -q 'searchApps' src/mcp/tools.ts || fail "keyword_search must call core/search"
+grep -q 'get_app' llms.txt || fail "llms.txt missing get_app"
+grep -q 'list_reviews' llms.txt || fail "llms.txt missing list_reviews"
+grep -q 'keyword_search' llms.txt || fail "llms.txt missing keyword_search"
+grep -q 'When not to call' llms.txt || fail "llms.txt missing when-not-to-call"
+grep -qi 'download estimate' llms.txt || fail "llms.txt missing download-estimate disclaimer"
+grep -qi 'do not write metadata' llms.txt || fail "llms.txt missing write-metadata disclaimer"
+if grep -RInE 'adapters/' src/mcp >/dev/null 2>&1; then
+  fail "MCP must call core/* only"
+fi
+if grep -RInE 'https?://itunes\.apple\.com|https?://apps\.apple\.com|https?://play\.google\.com|https?://android\.clients\.google\.com' src/mcp >/dev/null 2>&1; then
+  fail "src/mcp must not call Apple or Play hosts"
+fi
+if grep -RInE '\bfetch\s*\(' src/mcp >/dev/null 2>&1; then
+  fail "live fetch() is not allowed in src/mcp; fixtures only"
 fi
 
 if [[ -f package.json ]]; then

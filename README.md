@@ -1,6 +1,7 @@
 # StoreAPI
 
 Build contract: [SPEC.md](./SPEC.md).
+How we work: [CONTRIBUTING.md](./CONTRIBUTING.md). `main` stays buildable and testable.
 
 App Store and Google Play: app details, reviews, charts, keyword search.
 

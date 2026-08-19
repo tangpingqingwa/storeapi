@@ -158,14 +158,10 @@ test("unknown Play app is app_not_found; blocked fixture is upstream_blocked", a
   );
 });
 
-test("SPEC 5: Play country=JP is country_unsupported; GB is still 501", async () => {
+test("SPEC 5: Play country=JP is country_unsupported", async () => {
   await assert.rejects(
     () => getApp({ store: "play", id: YOUTUBE_ID, country: "JP" }),
     { name: "StoreApiError", code: "country_unsupported" },
-  );
-  await assert.rejects(
-    () => getApp({ store: "play", id: YOUTUBE_ID, country: "GB" }),
-    { name: "StoreApiError", code: "not_implemented" },
   );
 });
 
@@ -260,11 +256,13 @@ test("GET Play country=JP is 422 country_unsupported and 0 credits", async () =>
   assert.equal(body.meta.creditsCharged, 0);
 });
 
-test("GET Play country=GB is 501 this PR (UK is PR 4)", async () => {
+test("GET Play country=GB is 200 with the UK listing (not 501)", async () => {
   const { response } = await injectApp(`/v1/apps/play/${YOUTUBE_ID}?country=GB`);
-  assert.equal(response.statusCode, 501);
-  assert.equal((response.json() as ErrBody).error.code, "not_implemented");
-  assert.equal((response.json() as ErrBody).meta.creditsCharged, 0);
+  assert.equal(response.statusCode, 200);
+  const body = response.json() as Envelope<AppListing>;
+  assert.equal(body.data.name, "YouTube");
+  assert.deepEqual(body.data.countries, ["GB"]);
+  assert.equal(body.meta.creditsCharged, 1);
 });
 
 test("GET missing Play app is 404; blocked fixture is 503; both charge 0", async () => {

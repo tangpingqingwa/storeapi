@@ -45,6 +45,10 @@ if [[ -d tests/fixtures/ios ]]; then
     || fail "missing recorded iOS US listing fixture"
   grep -q '"im:rating"' tests/fixtures/ios/reviews-instagram-us-p1.json \
     || fail "missing recorded iOS US reviews fixture"
+  grep -q '"Instagram"' tests/fixtures/ios/lookup-instagram-gb.json \
+    || fail "missing recorded iOS GB listing fixture"
+  grep -q '"im:rating"' tests/fixtures/ios/reviews-instagram-gb-p1.json \
+    || fail "missing recorded iOS GB reviews fixture"
   if grep -RInE 'adapters/' src/http >/dev/null 2>&1; then
     fail "HTTP must call core/* only"
   fi
@@ -64,6 +68,10 @@ if [[ -d tests/fixtures/play ]]; then
     || fail "missing recorded Play US listing fixture"
   grep -q '"score"' tests/fixtures/play/reviews-youtube-us-p1.json \
     || fail "missing recorded Play US reviews fixture"
+  grep -q '"YouTube"' tests/fixtures/play/details-youtube-gb.json \
+    || fail "missing recorded Play GB listing fixture"
+  grep -q '"score"' tests/fixtures/play/reviews-youtube-gb-p1.json \
+    || fail "missing recorded Play GB reviews fixture"
   if grep -RInE 'adapters/' src/http >/dev/null 2>&1; then
     fail "HTTP must call core/* only"
   fi

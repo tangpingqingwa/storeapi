@@ -158,11 +158,7 @@ test("unknown iOS app is app_not_found; blocked fixture is upstream_blocked", as
   );
 });
 
-test("UK is 501 this PR; JP is country_unsupported; amazon is store_unsupported", async () => {
-  await assert.rejects(
-    () => getApp({ store: "ios", id: INSTAGRAM_ID, country: "GB" }),
-    { name: "StoreApiError", code: "not_implemented" },
-  );
+test("JP is country_unsupported; amazon is store_unsupported", async () => {
   await assert.rejects(
     () => getApp({ store: "ios", id: INSTAGRAM_ID, country: "JP" }),
     { name: "StoreApiError", code: "country_unsupported" },
@@ -247,11 +243,13 @@ test("GET country=JP is 422 country_unsupported and 0 credits", async () => {
   assert.equal(body.meta.creditsCharged, 0);
 });
 
-test("GET country=GB is 501 this PR (UK is PR 4)", async () => {
+test("GET country=GB is 200 with the UK listing (not 501)", async () => {
   const { response } = await injectApp(`/v1/apps/ios/${INSTAGRAM_ID}?country=GB`);
-  assert.equal(response.statusCode, 501);
-  assert.equal((response.json() as ErrBody).error.code, "not_implemented");
-  assert.equal((response.json() as ErrBody).meta.creditsCharged, 0);
+  assert.equal(response.statusCode, 200);
+  const body = response.json() as Envelope<AppListing>;
+  assert.equal(body.data.name, "Instagram");
+  assert.deepEqual(body.data.countries, ["GB"]);
+  assert.equal(body.meta.creditsCharged, 1);
 });
 
 test("GET unknown store is 422 store_unsupported", async () => {

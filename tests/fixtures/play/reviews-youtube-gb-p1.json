@@ -1,0 +1,31 @@
+{
+  "reviews": [
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_gb_1",
+      "userName": "uk.photo.fan",
+      "score": 5,
+      "title": "Still the best player",
+      "text": "Playback is solid in the UK. This is a real review from the recorded Play GB public-page fixture.",
+      "version": "19.50.37",
+      "at": "2026-01-12T18:22:11+00:00"
+    },
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_gb_2",
+      "userName": "uk.night.owl",
+      "score": 4,
+      "title": "Mostly good",
+      "text": "Recommendations work on the GB storefront. Ads are loud but the app still does what it says.",
+      "version": "19.50.37",
+      "at": "2026-01-11T09:04:00+00:00"
+    },
+    {
+      "reviewId": "gp:AOqpTOH_fixture_youtube_gb_3",
+      "userName": "uk.bug.hunter",
+      "score": 2,
+      "title": "Crashes on Picture-in-Picture",
+      "text": "PiP crashed twice today on a UK device. Stars are 2 because the rest still works.",
+      "version": "19.49.32",
+      "at": "2026-01-10T21:41:33+00:00"
+    }
+  ]
+}

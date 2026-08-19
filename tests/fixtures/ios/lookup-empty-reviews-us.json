@@ -1,0 +1,22 @@
+{
+  "resultCount": 1,
+  "results": [
+    {
+      "trackId": 999000001,
+      "trackName": "Fixture Empty Reviews",
+      "bundleId": "com.storeapi.emptyreviews",
+      "artistName": "StoreAPI Fixtures",
+      "trackViewUrl": "https://apps.apple.com/us/app/fixture-empty-reviews/id999000001?uo=4",
+      "artworkUrl100": null,
+      "primaryGenreName": "Utilities",
+      "averageUserRating": 0,
+      "userRatingCount": 0,
+      "formattedPrice": "Free",
+      "price": 0,
+      "currency": "USD",
+      "description": "Recorded fixture for an iOS app with no customer reviews.",
+      "version": "1.0",
+      "currentVersionReleaseDate": "2024-06-01T00:00:00Z"
+    }
+  ]
+}

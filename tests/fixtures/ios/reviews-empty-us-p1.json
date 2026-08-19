@@ -1,0 +1,15 @@
+{
+  "feed": {
+    "author": {
+      "name": { "label": "iTunes Store" }
+    },
+    "entry": {
+      "im:name": { "label": "Fixture Empty Reviews" },
+      "id": {
+        "label": "https://itunes.apple.com/us/app/fixture-empty-reviews/id999000001",
+        "attributes": { "im:id": "999000001" }
+      },
+      "title": { "label": "Fixture Empty Reviews - StoreAPI Fixtures" }
+    }
+  }
+}

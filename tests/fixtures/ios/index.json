@@ -1,0 +1,57 @@
+{
+  "apps": [
+    {
+      "kind": "lookup",
+      "id": "389801252",
+      "country": "US",
+      "file": "lookup-instagram-us.json"
+    },
+    {
+      "kind": "lookup",
+      "id": "com.burbn.instagram",
+      "country": "US",
+      "file": "lookup-instagram-us.json"
+    },
+    {
+      "kind": "reviews",
+      "id": "389801252",
+      "country": "US",
+      "page": 1,
+      "file": "reviews-instagram-us-p1.json"
+    },
+    {
+      "kind": "lookup",
+      "id": "999000001",
+      "country": "US",
+      "file": "lookup-empty-reviews-us.json"
+    },
+    {
+      "kind": "reviews",
+      "id": "999000001",
+      "country": "US",
+      "page": 1,
+      "file": "reviews-empty-us-p1.json"
+    },
+    {
+      "kind": "lookup",
+      "id": "999000404",
+      "country": "US",
+      "file": "lookup-missing.json"
+    },
+    {
+      "kind": "lookup",
+      "id": "999000503",
+      "country": "US",
+      "file": "lookup-blocked.json",
+      "status": 503
+    },
+    {
+      "kind": "reviews",
+      "id": "999000503",
+      "country": "US",
+      "page": 1,
+      "file": "reviews-blocked.json",
+      "status": 503
+    }
+  ]
+}

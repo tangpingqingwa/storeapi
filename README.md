@@ -1,5 +1,7 @@
 # StoreAPI
 
+Build contract: [SPEC.md](./SPEC.md).
+
 App Store and Google Play: app details, reviews, charts, keyword search.
 
 App Store Connect and Play Console show you your app. They do not show you a competitor’s review firehose. Sensor Tower and data.ai charge enterprise rents for that.

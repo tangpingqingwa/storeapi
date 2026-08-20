@@ -218,4 +218,4 @@ Full process: [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Implementation plan (stack, modules, PR DAG): [BUILD.md](./BUILD.md).
 
-Until there is an application binary, `scripts/test.sh` still has to pass: contract files exist, SPEC/CONTRIBUTING agree, no tracked secrets. Adding a server or CLI means **extending** that script with unit/contract tests. Live upstream calls are optional and must not be required for `main` to stay green.
+Until there is an application binary, `scripts/test.sh` still has to pass: contract files exist, SPEC/CONTRIBUTING agree, no tracked secrets. Adding a server or CLI means **extending** that script with unit/contract tests. Live iTunes / Play adapters are env-gated (`STOREAPI_LIVE_STORES=1`) and off by default. `STOREAPI_FIXTURE_ONLY=1` forces fixtures. CI and `scripts/test.sh` stay offline.

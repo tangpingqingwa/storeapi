@@ -8,7 +8,24 @@ export type AppConfig = {
   databasePath: string;
   bootstrapKey: string | undefined;
   nodeEnv: string;
+  liveStores: boolean;
 };
+
+function truthyFlag(value: string | undefined): boolean {
+  if (value === undefined) {
+    return false;
+  }
+  const normalized = value.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+/** Live iTunes / Play. Off by default. STOREAPI_FIXTURE_ONLY wins. */
+export function liveStoresEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  if (truthyFlag(env.STOREAPI_FIXTURE_ONLY)) {
+    return false;
+  }
+  return truthyFlag(env.STOREAPI_LIVE_STORES);
+}
 
 export function parseListenPort(value = process.env.PORT): number {
   if (value === undefined || value === "") {
@@ -37,5 +54,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     bootstrapKey:
       bootstrapKey !== undefined && bootstrapKey !== "" ? bootstrapKey : undefined,
     nodeEnv,
+    liveStores: liveStoresEnabled(env),
   };
 }

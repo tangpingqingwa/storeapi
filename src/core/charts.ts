@@ -1,5 +1,4 @@
-import { createFixtureIosAdapter } from "../adapters/ios.js";
-import { createFixturePlayAdapter } from "../adapters/play.js";
+import { createStoreAdapters } from "../adapters/index.js";
 import {
   chartPageUsesUnifiedSchema,
   listingHasForbiddenEstimateField,
@@ -9,10 +8,7 @@ import {
 import { StoreApiError } from "./errors.js";
 import { resolveChartRequest } from "./params.js";
 
-const defaultAdapters: StoreAdapters = {
-  ios: createFixtureIosAdapter(),
-  play: createFixturePlayAdapter(),
-};
+const defaultAdapters: StoreAdapters = createStoreAdapters();
 
 export function assertChartPageSafe(page: ChartPage): ChartPage {
   if (listingHasForbiddenEstimateField(page)) {

@@ -16,6 +16,7 @@ import {
   type SearchPage,
   type StoreAdapter,
 } from "../types.js";
+import { type HttpGet } from "./http.js";
 
 export const PLAY_HOST = "play.google.com";
 
@@ -495,6 +496,279 @@ export function createFixturePlayAdapter(
       }
       const payload = readFixtureJson(match.file) as PlaySearchPayload;
       return parsePlaySearch(payload, country, q, page);
+    },
+  };
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function decodeJsString(value: string): string {
+  return decodeHtmlEntities(
+    value
+      .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) =>
+        String.fromCharCode(Number.parseInt(hex, 16)),
+      )
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\"),
+  );
+}
+
+function firstMatch(html: string, patterns: RegExp[]): string | null {
+  for (const pattern of patterns) {
+    const match = pattern.exec(html);
+    const captured = match?.[1];
+    if (captured !== undefined && captured.trim() !== "") {
+      return decodeHtmlEntities(captured.trim());
+    }
+  }
+  return null;
+}
+
+function extractJsonLdGraphs(html: string): unknown[] {
+  const graphs: unknown[] = [];
+  const scriptRe =
+    /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = scriptRe.exec(html)) !== null) {
+    const raw = match[1]?.trim() ?? "";
+    if (raw === "") {
+      continue;
+    }
+    try {
+      const parsed: unknown = JSON.parse(decodeHtmlEntities(raw));
+      graphs.push(parsed);
+    } catch {
+      // Ignore non-JSON script blocks; callers fail closed if required fields are missing.
+    }
+  }
+  return graphs;
+}
+
+function walkJsonLd(value: unknown, visit: (node: Record<string, unknown>) => void): void {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      walkJsonLd(item, visit);
+    }
+    return;
+  }
+  if (value === null || typeof value !== "object") {
+    return;
+  }
+  const node = value as Record<string, unknown>;
+  visit(node);
+  if ("@graph" in node) {
+    walkJsonLd(node["@graph"], visit);
+  }
+}
+
+function findJsonLdSoftwareApplication(
+  html: string,
+  packageName: string,
+): Record<string, unknown> | null {
+  let found: Record<string, unknown> | null = null;
+  for (const graph of extractJsonLdGraphs(html)) {
+    walkJsonLd(graph, (node) => {
+      const type = node["@type"];
+      const isApp =
+        type === "SoftwareApplication" ||
+        (Array.isArray(type) && type.includes("SoftwareApplication"));
+      if (!isApp) {
+        return;
+      }
+      const url = typeof node.url === "string" ? node.url : "";
+      if (url.includes(`id=${packageName}`) || url.includes(`id=${encodeURIComponent(packageName)}`)) {
+        found = node;
+      } else if (found === null) {
+        found = node;
+      }
+    });
+  }
+  return found;
+}
+
+function jsonLdAuthor(
+  author: unknown,
+): string | { name?: string } | undefined {
+  if (typeof author === "string") {
+    return author;
+  }
+  if (author && typeof author === "object") {
+    const name = (author as { name?: unknown }).name;
+    return typeof name === "string" ? { name } : undefined;
+  }
+  return undefined;
+}
+
+function jsonLdOffers(offers: unknown): PlayDetailsPayload["offers"] {
+  if (!offers || typeof offers !== "object") {
+    return undefined;
+  }
+  const node = Array.isArray(offers) ? offers[0] : offers;
+  if (!node || typeof node !== "object") {
+    return undefined;
+  }
+  const rec = node as { price?: unknown; priceCurrency?: unknown };
+  return {
+    price: typeof rec.price === "number" || typeof rec.price === "string" ? rec.price : undefined,
+    priceCurrency:
+      typeof rec.priceCurrency === "string" ? rec.priceCurrency : undefined,
+  };
+}
+
+export function parsePlayDetailsHtml(
+  html: string,
+  requestedId: string,
+): PlayDetailsPayload {
+  const app = findJsonLdSoftwareApplication(html, requestedId);
+  const name =
+    (typeof app?.name === "string" ? app.name : null) ??
+    firstMatch(html, [
+      /<h1\b[^>]*itemprop=["']name["'][^>]*>([\s\S]*?)<\/h1>/i,
+      /<h1\b[^>]*>([\s\S]*?)<\/h1>/i,
+      /<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i,
+    ]);
+  const description =
+    (typeof app?.description === "string" ? app.description : null) ??
+    firstMatch(html, [
+      /<meta\s+itemprop=["']description["']\s+content=["']([^"']+)["']/i,
+      /<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i,
+      /<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i,
+    ]);
+  const image =
+    (typeof app?.image === "string" ? app.image : null) ??
+    firstMatch(html, [
+      /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i,
+      /<img\b[^>]*itemprop=["']image["'][^>]*src=["']([^"']+)["']/i,
+    ]);
+  const rating = app?.aggregateRating;
+  const ratingNode =
+    rating && typeof rating === "object"
+      ? (rating as { ratingValue?: unknown; ratingCount?: unknown })
+      : undefined;
+  return {
+    packageName: requestedId,
+    name: name ?? undefined,
+    author: jsonLdAuthor(app?.author),
+    url:
+      typeof app?.url === "string"
+        ? app.url
+        : firstMatch(html, [/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i]) ??
+          undefined,
+    image: image ?? undefined,
+    applicationCategory:
+      typeof app?.applicationCategory === "string" ? app.applicationCategory : undefined,
+    aggregateRating:
+      ratingNode === undefined
+        ? undefined
+        : {
+            ratingValue:
+              typeof ratingNode.ratingValue === "number" ||
+              typeof ratingNode.ratingValue === "string"
+                ? ratingNode.ratingValue
+                : undefined,
+            ratingCount:
+              typeof ratingNode.ratingCount === "number" ||
+              typeof ratingNode.ratingCount === "string"
+                ? ratingNode.ratingCount
+                : undefined,
+          },
+    offers: jsonLdOffers(app?.offers),
+    description: description ?? undefined,
+    softwareVersion:
+      typeof app?.softwareVersion === "string" ? app.softwareVersion : undefined,
+    datePublished: typeof app?.datePublished === "string" ? app.datePublished : undefined,
+  };
+}
+
+const PLAY_AF_NAME_RE = /\["([a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z][a-zA-Z0-9_]*)+)",\s*"((?:\\.|[^"\\])*)"/g;
+
+export function parsePlayClusterHtml(html: string): Array<{ packageName: string; name: string }> {
+  const seen = new Set<string>();
+  const results: Array<{ packageName: string; name: string }> = [];
+  for (const match of html.matchAll(PLAY_AF_NAME_RE)) {
+    const packageName = match[1];
+    const rawName = match[2];
+    if (packageName === undefined || rawName === undefined) {
+      continue;
+    }
+    const name = decodeJsString(rawName).trim();
+    if (name === "" || seen.has(packageName)) {
+      continue;
+    }
+    seen.add(packageName);
+    results.push({ packageName, name });
+  }
+  return results;
+}
+
+function mapPlayHttpStatus(status: number, notFoundMessage: string): void {
+  if (status === 404) {
+    throw new StoreApiError("app_not_found", notFoundMessage);
+  }
+  if (status === 429 || status >= 500 || status < 200 || status >= 300) {
+    throw new StoreApiError("upstream_blocked", "Play upstream is blocked.");
+  }
+}
+
+async function getPlayHtml(
+  httpGet: HttpGet,
+  url: string,
+  notFoundMessage: string,
+): Promise<string> {
+  const response = await httpGet(url);
+  mapPlayHttpStatus(response.status, notFoundMessage);
+  if (response.body.trim() === "") {
+    throw new StoreApiError("upstream_blocked", "Play upstream is blocked.");
+  }
+  return response.body;
+}
+
+/** Public Play HTML. Missing stars or body is upstream_blocked, never invented. */
+export function createLivePlayAdapter(httpGet: HttpGet): PlayAdapter {
+  return {
+    async getListing(id, country) {
+      const html = await getPlayHtml(
+        httpGet,
+        playDetailsUrl(id, country),
+        "App was not found on Google Play.",
+      );
+      return parsePlayDetails(
+        parsePlayDetailsHtml(html, id),
+        id,
+        country,
+        new Date().toISOString(),
+      );
+    },
+    async getReviews(id, country, _page) {
+      await this.getListing(id, country);
+      throw new StoreApiError(
+        "upstream_blocked",
+        "Play reviews are not available from the public listing page.",
+      );
+    },
+    async getCharts(country, kind, category, page) {
+      const html = await getPlayHtml(
+        httpGet,
+        playChartsUrl(country, kind, category, page),
+        "Play charts upstream is blocked.",
+      );
+      return parsePlayCharts({ apps: parsePlayClusterHtml(html) }, country, kind, category, page);
+    },
+    async search(country, q, page) {
+      const html = await getPlayHtml(
+        httpGet,
+        playSearchUrl(q, country, page),
+        "Play search upstream is blocked.",
+      );
+      return parsePlaySearch({ results: parsePlayClusterHtml(html) }, country, q, page);
     },
   };
 }

@@ -1,5 +1,4 @@
-import { createFixtureIosAdapter } from "../adapters/ios.js";
-import { createFixturePlayAdapter } from "../adapters/play.js";
+import { createStoreAdapters } from "../adapters/index.js";
 import {
   assertReviewStars,
   isIosNumericId,
@@ -11,10 +10,7 @@ import {
 import { StoreApiError } from "./errors.js";
 import { parsePage, resolveStoreRequest } from "./params.js";
 
-const defaultAdapters: StoreAdapters = {
-  ios: createFixtureIosAdapter(),
-  play: createFixturePlayAdapter(),
-};
+const defaultAdapters: StoreAdapters = createStoreAdapters();
 
 export function assertReviewPageSafe(page: ReviewPage): ReviewPage {
   if (listingHasForbiddenEstimateField(page)) {

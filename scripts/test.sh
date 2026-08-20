@@ -117,6 +117,31 @@ if grep -RInE 'android\.clients\.google\.com' src >/dev/null 2>&1; then
   fail "do not call unofficial Play client hosts"
 fi
 
+echo "== deploy artifacts (Dockerfile + runbook) =="
+[[ -f Dockerfile ]] || fail "missing Dockerfile"
+[[ -f .env.example ]] || fail "missing .env.example"
+[[ -f deploy/runbook.md ]] || fail "missing deploy/runbook.md"
+grep -q 'node:22' Dockerfile || fail "Dockerfile must use Node 22"
+grep -qE '^USER[[:space:]]+node$' Dockerfile || fail "Dockerfile must run as non-root USER node"
+grep -q 'PORT' Dockerfile || fail "Dockerfile must honor PORT"
+grep -q 'src/server.ts' Dockerfile || fail "Dockerfile must start src/server.ts"
+if grep -E 'STOREAPI_LIVE_STORES[[:space:]]*=[[:space:]]*(1|true|yes)' Dockerfile >/dev/null; then
+  fail "Dockerfile must not enable live stores"
+fi
+grep -q 'STOREAPI_LIVE_STORES' .env.example || fail ".env.example missing STOREAPI_LIVE_STORES"
+grep -q 'STOREAPI_DATABASE' .env.example || fail ".env.example missing STOREAPI_DATABASE"
+grep -q 'STOREAPI_BOOTSTRAP_KEY' .env.example || fail ".env.example missing STOREAPI_BOOTSTRAP_KEY"
+if grep -E '^[[:space:]]*STOREAPI_LIVE_STORES=1[[:space:]]*$' .env.example >/dev/null; then
+  fail ".env.example must not default live stores on"
+fi
+if grep -E '^[[:space:]]*STOREAPI_BOOTSTRAP_KEY=st_(live|test)_' .env.example >/dev/null; then
+  fail ".env.example must not ship a real bootstrap key"
+fi
+grep -q '/healthz' deploy/runbook.md || fail "runbook missing /healthz"
+grep -q 'STOREAPI_LIVE_STORES' deploy/runbook.md || fail "runbook missing how to enable live"
+grep -q 'docker build' deploy/runbook.md || fail "runbook missing docker build"
+grep -q 'docker run' deploy/runbook.md || fail "runbook missing docker run"
+
 echo "== MCP tools wrap core/* (PR 6) =="
 [[ -f src/mcp/server.ts ]] || fail "missing src/mcp/server.ts"
 [[ -f src/mcp/tools.ts ]] || fail "missing src/mcp/tools.ts"

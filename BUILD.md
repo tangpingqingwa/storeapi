@@ -69,4 +69,9 @@ Assert review `stars` is integer 1–5. Fail if generator would invent ids.
 - **Dependencies:** PR 6
 - **Acceptance:** default remains fixtures; `STOREAPI_LIVE_STORES=1` uses documented iTunes JSON and public Play pages; US + GB only; JP still `country_unsupported`; failures are `upstream_blocked`; never fabricate a review; live adapter does not run in CI
 
+### GA: Dockerfile + one-VPS runbook
+- **Files:** `Dockerfile`, `.env.example`, `deploy/runbook.md`
+- **Dependencies:** live adapters
+- **Acceptance:** Node 22, non-root, listen on `$PORT`; live stores stay off until the operator sets `STOREAPI_LIVE_STORES`; CI stays offline
+
 No download-estimate fields in types. Ever.

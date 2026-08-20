@@ -113,6 +113,9 @@ fi
 if grep -RInE 'STOREAPI_LIVE_STORES=1|STOREAPI_LIVE_STORES=true' .github >/dev/null 2>&1; then
   fail "CI must not enable STOREAPI_LIVE_STORES"
 fi
+if grep -RInE 'live-smoke' .github >/dev/null 2>&1; then
+  fail "CI must not run scripts/live-smoke.sh"
+fi
 if grep -RInE 'android\.clients\.google\.com' src >/dev/null 2>&1; then
   fail "do not call unofficial Play client hosts"
 fi

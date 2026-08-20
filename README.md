@@ -58,6 +58,10 @@ Success: 20 paying app teams; our own listings, if any, alert only through Store
 
 Default adapters are recorded fixtures. Set `STOREAPI_LIVE_STORES=1` to use documented iTunes Lookup / RSS / Search JSON and public Play pages. `STOREAPI_FIXTURE_ONLY=1` wins and keeps fixtures. CI never enables live stores.
 
+## One-box deploy
+
+`Dockerfile` + [`.env.example`](./.env.example). Operator steps: [deploy/runbook.md](./deploy/runbook.md). Live stores stay off until `STOREAPI_LIVE_STORES=1`.
+
 ## Will not do
 
 - No metadata write, no developer-account login

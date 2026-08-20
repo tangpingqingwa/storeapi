@@ -64,4 +64,9 @@ Assert review `stars` is integer 1–5. Fail if generator would invent ids.
 - **Tools:** get_app, list_reviews, keyword_search
 - **Dependencies:** PR 5
 
+### GA: live iTunes + Play adapters (env-gated)
+- **Files:** adapters/ios, adapters/play, adapters/http, adapters/index, config, core defaults, tests
+- **Dependencies:** PR 6
+- **Acceptance:** default remains fixtures; `STOREAPI_LIVE_STORES=1` uses documented iTunes JSON and public Play pages; US + GB only; JP still `country_unsupported`; failures are `upstream_blocked`; never fabricate a review; live adapter does not run in CI
+
 No download-estimate fields in types. Ever.

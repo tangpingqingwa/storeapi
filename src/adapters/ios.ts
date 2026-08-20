@@ -16,6 +16,7 @@ import {
   type SearchPage,
   type StoreAdapter,
 } from "../types.js";
+import { parseJsonBody, type HttpGet } from "./http.js";
 
 export const IOS_LOOKUP_HOST = "itunes.apple.com";
 export const IOS_RSS_HOST = "itunes.apple.com";
@@ -518,6 +519,64 @@ export function createFixtureIosAdapter(
         );
       }
       const payload = readFixtureJson(match.file) as IosSearchResult;
+      return parseIosSearch(payload, country, q, page);
+    },
+  };
+}
+
+function mapIosHttpStatus(status: number, notFoundMessage: string): void {
+  if (status === 404) {
+    throw new StoreApiError("app_not_found", notFoundMessage);
+  }
+  if (status === 429 || status >= 500 || status < 200 || status >= 300) {
+    throw new StoreApiError("upstream_blocked", "App Store upstream is blocked.");
+  }
+}
+
+async function getIosJson(
+  httpGet: HttpGet,
+  url: string,
+  malformed: string,
+): Promise<unknown> {
+  const response = await httpGet(url);
+  mapIosHttpStatus(response.status, "App was not found on the App Store.");
+  return parseJsonBody(response.body, malformed);
+}
+
+/** Documented iTunes Lookup / RSS / Search JSON. Never invents a review. */
+export function createLiveIosAdapter(httpGet: HttpGet): IosAdapter {
+  return {
+    async getListing(id, country) {
+      const payload = (await getIosJson(
+        httpGet,
+        itunesLookupUrl(id, country),
+        "iTunes lookup payload is malformed.",
+      )) as IosLookupResult;
+      return parseIosLookup(payload, id, country, new Date().toISOString());
+    },
+    async getReviews(id, country, page) {
+      await this.getListing(id, country);
+      const payload = (await getIosJson(
+        httpGet,
+        itunesReviewsRssUrl(id, country, page),
+        "iTunes reviews payload is malformed.",
+      )) as IosRssFeed;
+      return parseIosReviews(payload, country, page);
+    },
+    async getCharts(country, kind, category, page) {
+      const payload = (await getIosJson(
+        httpGet,
+        itunesChartsRssUrl(country, kind, category, page),
+        "iTunes charts payload is malformed.",
+      )) as IosRssChartFeed;
+      return parseIosCharts(payload, country, kind, category, page);
+    },
+    async search(country, q, page) {
+      const payload = (await getIosJson(
+        httpGet,
+        itunesSearchUrl(q, country, page),
+        "iTunes search payload is malformed.",
+      )) as IosSearchResult;
       return parseIosSearch(payload, country, q, page);
     },
   };

@@ -1,5 +1,4 @@
-import { createFixtureIosAdapter } from "../adapters/ios.js";
-import { createFixturePlayAdapter } from "../adapters/play.js";
+import { createStoreAdapters } from "../adapters/index.js";
 import {
   listingHasForbiddenEstimateField,
   listingUsesUnifiedSchema,
@@ -9,10 +8,7 @@ import {
 import { StoreApiError } from "./errors.js";
 import { resolveStoreRequest } from "./params.js";
 
-const defaultAdapters: StoreAdapters = {
-  ios: createFixtureIosAdapter(),
-  play: createFixturePlayAdapter(),
-};
+const defaultAdapters: StoreAdapters = createStoreAdapters();
 
 export function assertListingSafe(listing: AppListing): AppListing {
   if (listingHasForbiddenEstimateField(listing)) {

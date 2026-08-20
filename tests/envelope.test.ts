@@ -47,6 +47,17 @@ test("loadConfig requires STOREAPI_DATABASE in production", () => {
   });
   assert.equal(config.databasePath, "/tmp/storeapi.sqlite");
   assert.equal(config.bootstrapKey, "st_test_dev");
+  assert.equal(config.liveStores, false);
+});
+
+test("liveStores stays off unless STOREAPI_LIVE_STORES is set; FIXTURE_ONLY wins", () => {
+  assert.equal(loadConfig({}).liveStores, false);
+  assert.equal(loadConfig({ STOREAPI_LIVE_STORES: "1" }).liveStores, true);
+  assert.equal(loadConfig({ STOREAPI_LIVE_STORES: "true" }).liveStores, true);
+  assert.equal(
+    loadConfig({ STOREAPI_LIVE_STORES: "1", STOREAPI_FIXTURE_ONLY: "1" }).liveStores,
+    false,
+  );
 });
 
 test("createKey stores a hash and lookupKey finds the row", () => {

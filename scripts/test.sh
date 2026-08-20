@@ -59,8 +59,11 @@ if [[ -d tests/fixtures/ios ]]; then
   if grep -RInE 'https?://itunes\.apple\.com|https?://apps\.apple\.com' src/core src/http >/dev/null 2>&1; then
     fail "core/http must not call Apple; HTTP uses core/* only"
   fi
-  if grep -RInE '\bfetch\s*\(' src/adapters src/core src/http >/dev/null 2>&1; then
-    fail "live fetch() is not allowed; iOS stays on recorded fixtures"
+  if grep -RInE '\bfetch\s*\(' src/core src/http >/dev/null 2>&1; then
+    fail "core/http must not call fetch(); HTTP uses core/* only"
+  fi
+  if grep -RInE '\bfetch\s*\(' src/adapters --glob '!**/http.ts' >/dev/null 2>&1; then
+    fail "live fetch() must stay in adapters/http.ts"
   fi
 fi
 
@@ -86,9 +89,32 @@ if [[ -d tests/fixtures/play ]]; then
   if grep -RInE 'https?://play\.google\.com|https?://android\.clients\.google\.com' src/core src/http >/dev/null 2>&1; then
     fail "core/http must not call Play; HTTP uses core/* only"
   fi
-  if grep -RInE '\bfetch\s*\(' src/adapters src/core src/http >/dev/null 2>&1; then
-    fail "live fetch() is not allowed; Play stays on recorded fixtures"
+  if grep -RInE '\bfetch\s*\(' src/core src/http >/dev/null 2>&1; then
+    fail "core/http must not call fetch(); HTTP uses core/* only"
   fi
+  if grep -RInE '\bfetch\s*\(' src/adapters --glob '!**/http.ts' >/dev/null 2>&1; then
+    fail "live fetch() must stay in adapters/http.ts"
+  fi
+fi
+
+echo "== live stores stay env-gated and off in CI =="
+[[ -f src/adapters/http.ts ]] || fail "missing src/adapters/http.ts"
+[[ -f src/adapters/index.ts ]] || fail "missing src/adapters/index.ts"
+[[ -f tests/live-adapters.test.ts ]] || fail "missing tests/live-adapters.test.ts"
+grep -q 'createLiveIosAdapter' src/adapters/ios.ts || fail "missing createLiveIosAdapter"
+grep -q 'createLivePlayAdapter' src/adapters/play.ts || fail "missing createLivePlayAdapter"
+grep -q 'createStoreAdapters' src/adapters/index.ts || fail "missing createStoreAdapters"
+grep -q 'STOREAPI_LIVE_STORES' src/config.ts || fail "config missing STOREAPI_LIVE_STORES"
+grep -q 'STOREAPI_FIXTURE_ONLY' src/config.ts || fail "config missing STOREAPI_FIXTURE_ONLY"
+grep -q 'liveStoresEnabled' src/config.ts || fail "config missing liveStoresEnabled"
+if grep -RInE 'createLive(Ios|Play)Adapter|createLiveHttpGet' src/core src/http src/mcp >/dev/null 2>&1; then
+  fail "core/http/mcp must not construct live adapters; use createStoreAdapters"
+fi
+if grep -RInE 'STOREAPI_LIVE_STORES=1|STOREAPI_LIVE_STORES=true' .github >/dev/null 2>&1; then
+  fail "CI must not enable STOREAPI_LIVE_STORES"
+fi
+if grep -RInE 'android\.clients\.google\.com' src >/dev/null 2>&1; then
+  fail "do not call unofficial Play client hosts"
 fi
 
 echo "== MCP tools wrap core/* (PR 6) =="
@@ -135,6 +161,9 @@ if [[ -f package.json ]]; then
 
   echo "== unit tests =="
   # Quoted so bash 3.2 does not eat **; Node 22's test runner expands the glob.
+  # Fixture adapters only — never hit live iTunes / Play.
+  export STOREAPI_FIXTURE_ONLY=1
+  unset STOREAPI_LIVE_STORES || true
   test_log="$(mktemp)"
   trap 'rm -f "$test_log"' EXIT
   set +e

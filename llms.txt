@@ -22,7 +22,7 @@ Authorization: Bearer st_live_...
 Authorization: Bearer st_test_...
 ```
 
-Same key space for REST and MCP. No scopes. `st_test_*` uses recorded fixtures and never hits live App Store or Play.
+Same key space for REST and MCP. No scopes. Default transport is recorded fixtures. Live iTunes / Play requires `STOREAPI_LIVE_STORES=1` and is never required for CI.
 
 ## MCP tools
 
